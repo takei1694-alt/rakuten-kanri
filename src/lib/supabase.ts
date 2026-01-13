@@ -77,12 +77,14 @@ export async function getProductsSummary(period: string) {
   const totalProfit = products.reduce((sum, p) => sum + p.profit, 0);
   const totalOrders = products.reduce((sum, p) => sum + p.orders, 0);
   
-  return {
+return {
     summary: {
       totalSales,
       totalProfit,
       totalOrders,
-      productCount: products.length
+      productCount: products.length,
+      profitRate: totalSales > 0 ? (totalProfit / totalSales) * 100 : 0,
+      avgOrderValue: totalOrders > 0 ? totalSales / totalOrders : 0
     },
     products
   };
