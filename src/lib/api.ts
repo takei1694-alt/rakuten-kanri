@@ -192,7 +192,6 @@ export async function getProductDetail(productId: string, period: Period = 'mont
   if (endDate) params.endDate = endDate;
   return fetchApi<ProductDetailData>('productDetail', params);
 }
-}
 
 export async function getSkuStock(productId?: string): Promise<SkuStockData[]> {
   const params: Record<string, string> = {};
