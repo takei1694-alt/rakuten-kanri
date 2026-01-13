@@ -1,4 +1,8 @@
-const API_URL = '/api/gas';
+import { createClient } from '@supabase/supabase-js';
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 export type Period = 'week' | '2weeks' | 'month' | '3months' | 'year' | 'custom';
 
@@ -55,14 +59,11 @@ export interface SkuData {
 export interface ProductDetailData {
   productId: string;
   productName: string;
-  period: string;
-  startDate: string;
-  endDate: string;
   sales: number;
   orders: number;
-  avgOrderValue: number;
   profit: number;
   profitRate: number;
+  avgOrderValue: number;
   rakutenFee: number;
   coupon: number;
   points: number;
@@ -75,143 +76,209 @@ export interface ProductDetailData {
   skuList: SkuData[];
 }
 
-export interface KeywordData {
-  keyword: string;
-  impressions: number;
-  clicks: number;
-  adCost: number;
-  sales: number;
-  orders: number;
-  days: number;
-  avgImpressions: number;
-  avgClicks: number;
-  avgAdCost: number;
-  avgSales: number;
-  ctr: number;
-  cpc: number;
-  cvr: number;
-  roas: number;
-}
+function getDateRange(period: Period, startDate?: string, endDate?: string): { start: Date; end: Date } {
+  const end = new Date();
+  const start = new Date();
 
-export interface DailyKeywordData {
-  date: string;
-  total: {
-    impressions: number;
-    clicks: number;
-    adCost: number;
-    sales: number;
-    orders: number;
-    ctr: number;
-    cpc: number;
-    cvr: number;
-    roas: number;
-  };
-  keywords: {
-    keyword: string;
-    impressions: number;
-    clicks: number;
-    adCost: number;
-    sales: number;
-    orders: number;
-    ctr: number;
-    cpc: number;
-    cvr: number;
-    roas: number;
-  }[];
-}
-
-export interface SeoKeywordData {
-  keyword: string;
-  rankings: Record<string, number>;
-}
-
-async function fetchApi<T>(action: string, params: Record<string, string> = {}): Promise<T> {
-  const url = new URL(API_URL, window.location.origin);
-  url.searchParams.set('action', action);
-  url.searchParams.set('cache', 'true');
-  
-  Object.entries(params).forEach(([key, value]) => {
-    if (value) url.searchParams.set(key, value);
-  });
-  
-  const response = await fetch(url.toString(), {
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  });
-  
-  if (!response.ok) {
-    throw new Error(`API Error: ${response.status}`);
+  if (period === 'custom' && startDate && endDate) {
+    return { start: new Date(startDate), end: new Date(endDate) };
   }
-  
-  const data = await response.json();
-  
-  if (!data.success && data.error) {
-    throw new Error(data.error);
+
+  switch (period) {
+    case 'week':
+      start.setDate(end.getDate() - 7);
+      break;
+    case '2weeks':
+      start.setDate(end.getDate() - 14);
+      break;
+    case 'month':
+      start.setMonth(end.getMonth() - 1);
+      break;
+    case '3months':
+      start.setMonth(end.getMonth() - 3);
+      break;
+    case 'year':
+      start.setFullYear(end.getFullYear() - 1);
+      break;
+    default:
+      start.setDate(end.getDate() - 7);
   }
-  
-  return data;
+
+  return { start, end };
+}
+
+function formatDate(date: Date): string {
+  return date.toISOString().split('T')[0];
 }
 
 export async function getSummary(period: Period, startDate?: string, endDate?: string): Promise<SummaryData> {
-  const params: Record<string, string> = { period };
-  if (startDate) params.startDate = startDate;
-  if (endDate) params.endDate = endDate;
-  
-  const response = await fetchApi<{ success: boolean; data: SummaryData }>('summary', params);
-  return response.data;
+  const { start, end } = getDateRange(period, startDate, endDate);
+
+  const { data, error } = await supabase
+    .from('orders')
+    .select('sales, profit, rakuten_fee, coupon, points, cost, shipping')
+    .gte('order_date', formatDate(start))
+    .lte('order_date', formatDate(end));
+
+  if (error) throw error;
+
+  let sales = 0, profit = 0, orders = 0;
+  let rakutenFee = 0, coupon = 0, points = 0, cost = 0, shipping = 0;
+
+  data?.forEach(row => {
+    sales += row.sales || 0;
+    profit += row.profit || 0;
+    orders += 1;
+    rakutenFee += row.rakuten_fee || 0;
+    coupon += row.coupon || 0;
+    points += row.points || 0;
+    cost += row.cost || 0;
+    shipping += row.shipping || 0;
+  });
+
+  return {
+    period,
+    startDate: formatDate(start),
+    endDate: formatDate(end),
+    updatedAt: new Date().toISOString(),
+    sales,
+    orders,
+    avgOrderValue: orders > 0 ? sales / orders : 0,
+    rakutenFee,
+    coupon,
+    points,
+    cost,
+    shipping,
+    adCost: 0,
+    adSales: 0,
+    adOrders: 0,
+    roas: 0,
+    profit,
+    profitRate: sales > 0 ? (profit / sales) * 100 : 0,
+    fromCache: false
+  };
 }
 
 export async function getProducts(period: Period, startDate?: string, endDate?: string): Promise<ProductData[]> {
-  const params: Record<string, string> = { period };
-  if (startDate) params.startDate = startDate;
-  if (endDate) params.endDate = endDate;
-  
-  const response = await fetchApi<{ success: boolean; data: ProductData[] }>('products', params);
-  return response.data;
+  const { start, end } = getDateRange(period, startDate, endDate);
+
+  const { data, error } = await supabase
+    .from('orders')
+    .select('product_id, product_name, sales, profit, rakuten_fee, coupon, points, cost, shipping')
+    .gte('order_date', formatDate(start))
+    .lte('order_date', formatDate(end));
+
+  if (error) throw error;
+
+  const productMap = new Map<string, ProductData>();
+
+  data?.forEach(row => {
+    const id = row.product_id;
+    if (!productMap.has(id)) {
+      productMap.set(id, {
+        productId: id,
+        productName: row.product_name || id,
+        sales: 0,
+        orders: 0,
+        profit: 0,
+        profitRate: 0,
+        adCost: 0,
+        adSales: 0,
+        roas: 0,
+        rakutenFee: 0,
+        coupon: 0,
+        points: 0,
+        cost: 0,
+        shipping: 0
+      });
+    }
+    const product = productMap.get(id)!;
+    product.sales += row.sales || 0;
+    product.profit += row.profit || 0;
+    product.orders += 1;
+    product.rakutenFee += row.rakuten_fee || 0;
+    product.coupon += row.coupon || 0;
+    product.points += row.points || 0;
+    product.cost += row.cost || 0;
+    product.shipping += row.shipping || 0;
+  });
+
+  const products = Array.from(productMap.values());
+  products.forEach(p => {
+    p.profitRate = p.sales > 0 ? (p.profit / p.sales) * 100 : 0;
+  });
+  products.sort((a, b) => b.sales - a.sales);
+
+  return products;
 }
 
 export async function getProductDetail(productId: string, period: Period, startDate?: string, endDate?: string): Promise<ProductDetailData> {
-  const params: Record<string, string> = { productId, period };
-  if (startDate) params.startDate = startDate;
-  if (endDate) params.endDate = endDate;
-  
-  const response = await fetchApi<{ success: boolean; data: ProductDetailData }>('product', params);
-  return response.data;
-}
+  const { start, end } = getDateRange(period, startDate, endDate);
 
-export async function getKeywords(productId: string, period: Period, startDate?: string, endDate?: string): Promise<KeywordData[]> {
-  const params: Record<string, string> = { productId, period };
-  if (startDate) params.startDate = startDate;
-  if (endDate) params.endDate = endDate;
-  
-  const response = await fetchApi<{ success: boolean; data: KeywordData[] }>('keywords', params);
-  return response.data;
-}
+  const { data, error } = await supabase
+    .from('orders')
+    .select('*')
+    .eq('product_id', productId)
+    .gte('order_date', formatDate(start))
+    .lte('order_date', formatDate(end));
 
-export async function getKeywordsDaily(productId: string, period: Period, startDate?: string, endDate?: string): Promise<{ keywords: string[]; data: DailyKeywordData[] }> {
-  const params: Record<string, string> = { productId, period };
-  if (startDate) params.startDate = startDate;
-  if (endDate) params.endDate = endDate;
-  
-  const response = await fetchApi<{ success: boolean; keywords: string[]; data: DailyKeywordData[] }>('keywordsDaily', params);
-  return { keywords: response.keywords, data: response.data };
-}
+  if (error) throw error;
 
-export async function getSeoData(productId: string): Promise<{ dates: string[]; data: SeoKeywordData[] }> {
-  const response = await fetchApi<{ success: boolean; dates: string[]; data: SeoKeywordData[] }>('seo', { productId });
-  return { dates: response.dates, data: response.data };
-}
+  let sales = 0, profit = 0, orders = 0;
+  let rakutenFee = 0, coupon = 0, points = 0, cost = 0, shipping = 0;
+  const skuMap = new Map<string, SkuData>();
 
-export function formatCurrency(value: number): string {
-  return '¥' + value.toLocaleString('ja-JP');
-}
+  data?.forEach(row => {
+    sales += row.sales || 0;
+    profit += row.profit || 0;
+    orders += 1;
+    rakutenFee += row.rakuten_fee || 0;
+    coupon += row.coupon || 0;
+    points += row.points || 0;
+    cost += row.cost || 0;
+    shipping += row.shipping || 0;
 
-export function formatPercent(value: number): string {
-  return value.toFixed(1) + '%';
-}
+    const skuId = row.sku_id || 'unknown';
+    if (!skuMap.has(skuId)) {
+      skuMap.set(skuId, {
+        skuId,
+        skuInfo: row.sku_info || '',
+        sales: 0,
+        orders: 0,
+        profit: 0,
+        profitRate: 0,
+        totalStock: 0,
+        currentStock: 0
+      });
+    }
+    const sku = skuMap.get(skuId)!;
+    sku.sales += row.sales || 0;
+    sku.profit += row.profit || 0;
+    sku.orders += 1;
+  });
 
-export function formatNumber(value: number): string {
-  return value.toLocaleString('ja-JP');
+  const skuList = Array.from(skuMap.values());
+  skuList.forEach(sku => {
+    sku.profitRate = sku.sales > 0 ? (sku.profit / sku.sales) * 100 : 0;
+  });
+
+  return {
+    productId,
+    productName: data?.[0]?.product_name || productId,
+    sales,
+    orders,
+    profit,
+    profitRate: sales > 0 ? (profit / sales) * 100 : 0,
+    avgOrderValue: orders > 0 ? sales / orders : 0,
+    rakutenFee,
+    coupon,
+    points,
+    cost,
+    shipping,
+    adCost: 0,
+    adSales: 0,
+    adOrders: 0,
+    roas: 0,
+    skuList
+  };
 }
