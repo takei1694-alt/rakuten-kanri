@@ -1,45 +1,7 @@
 const API_URL = '/api/gas';
 
+// 型定義
 export type Period = 'week' | '2weeks' | 'month' | '3months' | 'year' | 'custom';
-
-export interface SummaryData {
-  period: string;
-  startDate: string;
-  endDate: string;
-  updatedAt: string;
-  sales: number;
-  orders: number;
-  avgOrderValue: number;
-  rakutenFee: number;
-  coupon: number;
-  points: number;
-  cost: number;
-  shipping: number;
-  adCost: number;
-  adSales: number;
-  adOrders: number;
-  roas: number;
-  profit: number;
-  profitRate: number;
-  fromCache?: boolean;
-}
-
-export interface ProductData {
-  productId: string;
-  productName: string;
-  sales: number;
-  orders: number;
-  profit: number;
-  profitRate: number;
-  adCost: number;
-  adSales: number;
-  roas: number;
-  rakutenFee: number;
-  coupon: number;
-  points: number;
-  cost: number;
-  shipping: number;
-}
 
 export interface ProductDetailData {
   productId: string;
@@ -56,46 +18,9 @@ export interface ProductDetailData {
   points: number;
   cost: number;
   shipping: number;
-  dailyData?: Array<{
-    date: string;
-    sales: number;
-    orders: number;
-    profit: number;
-  }>;
 }
 
-export interface SkuStockData {
-  productId: string;
-  productName: string;
-  skuId: string;
-  skuName: string;
-  stock: number;
-  salesPerDay: number;
-  stockDays: number;
-}
-
-export interface SeoRankingData {
-  productId: string;
-  productName: string;
-  keyword: string;
-  currentRank: number;
-  previousRank: number;
-  rankChange: number;
-  searchDate: string;
-}
-
-export interface SeoKeywordData {
-  keyword: string;
-  currentRank: number;
-  previousRank: number;
-  rankChange: number;
-  searchDate: string;
-}
-
-export interface AdsDailyData {
-  date: string;
-  productId: string;
-  productName: string;
+export interface KeywordData {
   keyword: string;
   impressions: number;
   clicks: number;
@@ -122,37 +47,22 @@ export interface DailyKeywordData {
   roas: number;
 }
 
-export interface AdsAverageData {
-  productId: string;
-  productName: string;
+export interface SeoKeywordData {
   keyword: string;
-  avgImpressions: number;
-  avgClicks: number;
-  avgCtr: number;
-  avgCpc: number;
-  avgCost: number;
-  avgSales: number;
-  avgOrders: number;
-  avgCvr: number;
-  avgRoas: number;
-  totalCost: number;
-  totalSales: number;
-  totalOrders: number;
+  currentRank: number;
+  previousRank: number;
+  rankChange: number;
+  searchDate: string;
 }
 
-export interface KeywordData {
-  keyword: string;
-  impressions: number;
-  clicks: number;
-  ctr: number;
-  cpc: number;
-  cost: number;
-  sales: number;
-  orders: number;
-  cvr: number;
-  roas: number;
+// API呼び出し用の内部型
+interface ApiResponse<T> {
+  success: boolean;
+  data: T;
+  error?: string;
 }
 
+// 汎用API呼び出し関数
 async function fetchApi<T>(action: string, params: Record<string, string> = {}): Promise<T> {
   const searchParams = new URLSearchParams({ action, ...params });
   const url = `${API_URL}?${searchParams.toString()}`;
@@ -163,73 +73,63 @@ async function fetchApi<T>(action: string, params: Record<string, string> = {}):
     throw new Error(`API error: ${response.status}`);
   }
   
-  const data = await response.json();
+  const result: ApiResponse<T> = await response.json();
   
-  if (!data.success) {
-    throw new Error(data.error || 'Unknown error');
+  if (!result.success) {
+    throw new Error(result.error || 'Unknown error');
   }
   
-  return data.data;
+  return result.data;
 }
 
-export async function getSummary(period: Period = 'month', startDate?: string, endDate?: string): Promise<SummaryData> {
-  const params: Record<string, string> = { period };
-  if (startDate) params.startDate = startDate;
-  if (endDate) params.endDate = endDate;
-  return fetchApi<SummaryData>('summary', params);
-}
-
-export async function getProducts(period: Period = 'month', startDate?: string, endDate?: string): Promise<ProductData[]> {
-  const params: Record<string, string> = { period };
-  if (startDate) params.startDate = startDate;
-  if (endDate) params.endDate = endDate;
-  return fetchApi<ProductData[]>('products', params);
-}
-
-export async function getProductDetail(productId: string, period: Period = 'month', startDate?: string, endDate?: string): Promise<ProductDetailData> {
+// 商品詳細を取得
+export async function getProductDetail(
+  productId: string,
+  period: Period = 'month',
+  startDate?: string,
+  endDate?: string
+): Promise<ProductDetailData> {
   const params: Record<string, string> = { productId, period };
   if (startDate) params.startDate = startDate;
   if (endDate) params.endDate = endDate;
   return fetchApi<ProductDetailData>('productDetail', params);
 }
 
-export async function getSkuStock(productId?: string): Promise<SkuStockData[]> {
-  const params: Record<string, string> = {};
-  if (productId) params.productId = productId;
-  return fetchApi<SkuStockData[]>('skuStock', params);
-}
-
-export async function getSeoData(productId?: string): Promise<SeoRankingData[]> {
-  const params: Record<string, string> = {};
-  if (productId) params.productId = productId;
-  return fetchApi<SeoRankingData[]>('seoRanking', params);
-}
-
-export async function getProductSeoData(productId: string): Promise<SeoKeywordData[]> {
-  return fetchApi<SeoKeywordData[]>('seoRanking', { productId });
-}
-
-export async function getKeywordsDaily(productId?: string, days?: number): Promise<AdsDailyData[]> {
-  const params: Record<string, string> = {};
-  if (productId) params.productId = productId;
-  if (days) params.days = days.toString();
-  return fetchApi<AdsDailyData[]>('adsDaily', params);
-}
-
-export async function getProductKeywordsDaily(productId: string, days?: number): Promise<DailyKeywordData[]> {
-  const params: Record<string, string> = { productId };
-  if (days) params.days = days.toString();
-  return fetchApi<DailyKeywordData[]>('adsDaily', params);
-}
-
-export async function getKeywords(productId?: string, period?: Period, startDate?: string, endDate?: string): Promise<AdsAverageData[]> {
+// キーワードデータ（平均）を取得
+export async function getKeywords(
+  productId?: string,
+  period?: Period,
+  startDate?: string,
+  endDate?: string
+): Promise<KeywordData[]> {
   const params: Record<string, string> = {};
   if (productId) params.productId = productId;
   if (period) params.period = period;
   if (startDate) params.startDate = startDate;
   if (endDate) params.endDate = endDate;
-  return fetchApi<AdsAverageData[]>('adsAverage', params);
+  return fetchApi<KeywordData[]>('adsAverage', params);
 }
+
+// キーワードデータ（日別）を取得
+export async function getKeywordsDaily(
+  productId?: string,
+  period?: Period,
+  startDate?: string,
+  endDate?: string
+): Promise<DailyKeywordData[]> {
+  const params: Record<string, string> = {};
+  if (productId) params.productId = productId;
+  if (period) params.period = period;
+  if (startDate) params.startDate = startDate;
+  if (endDate) params.endDate = endDate;
+  return fetchApi<DailyKeywordData[]>('adsDaily', params);
+}
+
+// SEOデータを取得
+export async function getSeoData(productId: string): Promise<SeoKeywordData[]> {
+  return fetchApi<SeoKeywordData[]>('seoRanking', { productId });
+}
+
 // ユーティリティ関数
 export function formatCurrency(value: number): string {
   return new Intl.NumberFormat('ja-JP', {
@@ -250,8 +150,4 @@ export function formatPercent(value: number): string {
 
 export function formatNumber(value: number): string {
   return new Intl.NumberFormat('ja-JP').format(value);
-}
-
-export async function getProductKeywords(productId: string): Promise<KeywordData[]> {
-  return fetchApi<KeywordData[]>('adsAverage', { productId });
 }
