@@ -224,6 +224,27 @@ export async function getKeywords(productId?: string): Promise<AdsAverageData[]>
   if (productId) params.productId = productId;
   return fetchApi<AdsAverageData[]>('adsAverage', params);
 }
+// ユーティリティ関数
+export function formatCurrency(value: number): string {
+  return new Intl.NumberFormat('ja-JP', {
+    style: 'currency',
+    currency: 'JPY',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(value);
+}
+
+export function formatPercent(value: number): string {
+  return new Intl.NumberFormat('ja-JP', {
+    style: 'percent',
+    minimumFractionDigits: 1,
+    maximumFractionDigits: 1,
+  }).format(value / 100);
+}
+
+export function formatNumber(value: number): string {
+  return new Intl.NumberFormat('ja-JP').format(value);
+}
 
 export async function getProductKeywords(productId: string): Promise<KeywordData[]> {
   return fetchApi<KeywordData[]>('adsAverage', { productId });
