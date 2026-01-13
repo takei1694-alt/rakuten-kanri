@@ -90,13 +90,17 @@ export default function ProductDetailPage() {
         );
         setKeywords(kw);
       } else {
-        const kwDaily = await getKeywordsDaily(
+    const kwDailyRaw = await getKeywordsDaily(
           productId,
           period,
           period === 'custom' ? startDate : undefined,
           period === 'custom' ? endDate : undefined
         );
-        setKeywordsDaily(kwDaily);
+        const kwDailyFormatted = {
+          keywords: [...new Set(kwDailyRaw.map(item => item.keyword))],
+          data: kwDailyRaw
+        };
+        setKeywordsDaily(kwDailyFormatted);
       }
     } catch (err) {
       console.error('広告データ取得エラー:', err);
