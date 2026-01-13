@@ -186,8 +186,12 @@ export async function getProducts(period: Period = 'month', startDate?: string, 
   return fetchApi<ProductData[]>('products', params);
 }
 
-export async function getProductDetail(productId: string, period: Period = 'month'): Promise<ProductDetailData> {
-  return fetchApi<ProductDetailData>('productDetail', { productId, period });
+export async function getProductDetail(productId: string, period: Period = 'month', startDate?: string, endDate?: string): Promise<ProductDetailData> {
+  const params: Record<string, string> = { productId, period };
+  if (startDate) params.startDate = startDate;
+  if (endDate) params.endDate = endDate;
+  return fetchApi<ProductDetailData>('productDetail', params);
+}
 }
 
 export async function getSkuStock(productId?: string): Promise<SkuStockData[]> {
