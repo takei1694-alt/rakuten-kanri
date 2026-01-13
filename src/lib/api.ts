@@ -282,3 +282,20 @@ export async function getProductDetail(productId: string, period: Period, startD
     skuList
   };
 }
+// ユーティリティ関数
+export function formatCurrency(value: number): string {
+  return new Intl.NumberFormat('ja-JP', {
+    style: 'currency',
+    currency: 'JPY',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0
+  }).format(value);
+}
+
+export function formatNumber(value: number): string {
+  return new Intl.NumberFormat('ja-JP').format(value);
+}
+
+export function formatPercent(value: number): string {
+  return value.toFixed(1) + '%';
+}
