@@ -222,9 +222,12 @@ export async function getProductKeywordsDaily(productId: string, days?: number):
   return fetchApi<DailyKeywordData[]>('adsDaily', params);
 }
 
-export async function getKeywords(productId?: string): Promise<AdsAverageData[]> {
+export async function getKeywords(productId?: string, period?: Period, startDate?: string, endDate?: string): Promise<AdsAverageData[]> {
   const params: Record<string, string> = {};
   if (productId) params.productId = productId;
+  if (period) params.period = period;
+  if (startDate) params.startDate = startDate;
+  if (endDate) params.endDate = endDate;
   return fetchApi<AdsAverageData[]>('adsAverage', params);
 }
 // ユーティリティ関数
