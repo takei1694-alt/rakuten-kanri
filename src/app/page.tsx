@@ -24,10 +24,24 @@ export default function HomePage() {
     setError(null);
     
     try {
-    const result = await getProductsSummary(period);
-      const summaryData = result.summary;
-      const productsData = result.products;
-      
+   const result = await getProductsSummary(period);
+      const summaryData: SummaryData = {
+        totalSales: result.summary.totalSales,
+        totalProfit: result.summary.totalProfit,
+        totalOrders: result.summary.totalOrders,
+        productCount: result.summary.productCount,
+        profitRate: result.summary.profitRate,
+        avgOrderValue: result.summary.avgOrderValue
+      };
+      const productsData: ProductData[] = result.products.map((p: any) => ({
+        productId: p.productId,
+        productName: p.productName,
+        sales: p.sales,
+        profit: p.profit,
+        orders: p.orders,
+        profitRate: p.sales > 0 ? (p.profit / p.sales) * 100 : 0
+      }));
+
       setSummary(summaryData);
       setProducts(productsData);
     } catch (err) {
