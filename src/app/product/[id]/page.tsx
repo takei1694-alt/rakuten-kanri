@@ -97,7 +97,7 @@ export default function ProductDetailPage() {
           period === 'custom' ? endDate : undefined
         );
         const kwDailyFormatted = {
-          keywords: [...new Set(kwDailyRaw.map(item => item.keyword))],
+          keywords: Array.from(new Set(kwDailyRaw.map(item => item.keyword))),
           data: kwDailyRaw
         };
         setKeywordsDaily(kwDailyFormatted);
