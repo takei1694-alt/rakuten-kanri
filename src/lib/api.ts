@@ -128,6 +128,7 @@ export interface SeoKeywordData {
 async function fetchApi<T>(action: string, params: Record<string, string> = {}): Promise<T> {
   const url = new URL(API_URL, window.location.origin);
   url.searchParams.set('action', action);
+  url.searchParams.set('cache', 'true');
   
   Object.entries(params).forEach(([key, value]) => {
     if (value) url.searchParams.set(key, value);
