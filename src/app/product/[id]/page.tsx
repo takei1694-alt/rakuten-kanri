@@ -57,18 +57,8 @@ export default function ProductDetailPage() {
       setDetail(detailData);
       
       // SEOデータは期間に関係なく取得
-    const seoRaw = await getSeoData(productId);
-        const seoFormatted = {
-          dates: seoRaw.map(item => item.searchDate),
-          data: seoRaw.map(item => ({
-            keyword: item.keyword,
-            currentRank: item.currentRank,
-            previousRank: item.previousRank,
-            rankChange: item.rankChange,
-            searchDate: item.searchDate,
-          }))
-        };
-        setSeoData(seoFormatted);
+      const seo = await getSeoData(productId);
+      setSeoData(seo);
       
     } catch (err) {
       setError(err instanceof Error ? err.message : 'データの取得に失敗しました');
@@ -90,17 +80,13 @@ export default function ProductDetailPage() {
         );
         setKeywords(kw);
       } else {
-    const kwDailyRaw = await getKeywordsDaily(
+        const kwDaily = await getKeywordsDaily(
           productId,
           period,
           period === 'custom' ? startDate : undefined,
           period === 'custom' ? endDate : undefined
         );
-        const kwDailyFormatted = {
-          keywords: Array.from(new Set(kwDailyRaw.map(item => item.keyword))),
-          data: kwDailyRaw
-        };
-        setKeywordsDaily(kwDailyFormatted);
+        setKeywordsDaily(kwDaily);
       }
     } catch (err) {
       console.error('広告データ取得エラー:', err);
