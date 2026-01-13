@@ -3,6 +3,45 @@ const API_URL = '/api/gas';
 // 型定義
 export type Period = 'week' | '2weeks' | 'month' | '3months' | 'year' | 'custom';
 
+export interface SummaryData {
+  period: string;
+  startDate: string;
+  endDate: string;
+  updatedAt: string;
+  sales: number;
+  orders: number;
+  avgOrderValue: number;
+  rakutenFee: number;
+  coupon: number;
+  points: number;
+  cost: number;
+  shipping: number;
+  adCost: number;
+  adSales: number;
+  adOrders: number;
+  roas: number;
+  profit: number;
+  profitRate: number;
+  fromCache?: boolean;
+}
+
+export interface ProductData {
+  productId: string;
+  productName: string;
+  sales: number;
+  orders: number;
+  profit: number;
+  profitRate: number;
+  adCost: number;
+  adSales: number;
+  roas: number;
+  rakutenFee: number;
+  coupon: number;
+  points: number;
+  cost: number;
+  shipping: number;
+}
+
 export interface ProductDetailData {
   productId: string;
   productName: string;
@@ -80,6 +119,30 @@ async function fetchApi<T>(action: string, params: Record<string, string> = {}):
   }
   
   return result.data;
+}
+
+// サマリーデータを取得
+export async function getSummary(
+  period: Period = 'month',
+  startDate?: string,
+  endDate?: string
+): Promise<SummaryData> {
+  const params: Record<string, string> = { period };
+  if (startDate) params.startDate = startDate;
+  if (endDate) params.endDate = endDate;
+  return fetchApi<SummaryData>('summary', params);
+}
+
+// 商品一覧を取得
+export async function getProducts(
+  period: Period = 'month',
+  startDate?: string,
+  endDate?: string
+): Promise<ProductData[]> {
+  const params: Record<string, string> = { period };
+  if (startDate) params.startDate = startDate;
+  if (endDate) params.endDate = endDate;
+  return fetchApi<ProductData[]>('products', params);
 }
 
 // 商品詳細を取得
