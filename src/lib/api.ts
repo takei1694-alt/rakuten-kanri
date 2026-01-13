@@ -1,5 +1,13 @@
-const API_URL = process.env.GAS_API_URL || 'https://script.google.com/macros/s/AKfycbydpEew2V8rkL1OKqml9eAmz8ZAAzI579cD_JeU45kBuIXXjZJV-fatTEUtodFlyzICUA/exec';
+const API_URL = '/api/gas';
+```
 
+## 具体的な操作
+
+1. 1行目の先頭をクリック
+2. 1行目全体を選択（`Ctrl + Shift + End` で行末まで、または手動で選択）
+3. 以下をコピーして貼り付け：
+```
+const API_URL = '/api/gas';
 export type Period = 'week' | '2weeks' | 'month' | '3months' | 'year' | 'custom';
 
 export interface SummaryData {
