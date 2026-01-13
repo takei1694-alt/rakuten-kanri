@@ -5,7 +5,8 @@ import Header from '@/components/Header';
 import PeriodSelector from '@/components/PeriodSelector';
 import SummaryCards from '@/components/SummaryCards';
 import ProductTable from '@/components/ProductTable';
-import { Period, SummaryData, ProductData, getSummary, getProducts } from '@/lib/api';
+import { Period, SummaryData, ProductData } from '@/lib/api';
+import { getProductsSummary } from '@/lib/supabase';
 
 export default function HomePage() {
   const [period, setPeriod] = useState<Period>('month');
@@ -23,10 +24,9 @@ export default function HomePage() {
     setError(null);
     
     try {
-      const [summaryData, productsData] = await Promise.all([
-        getSummary(period, period === 'custom' ? startDate : undefined, period === 'custom' ? endDate : undefined),
-        getProducts(period, period === 'custom' ? startDate : undefined, period === 'custom' ? endDate : undefined),
-      ]);
+    const result = await getProductsSummary(period);
+      const summaryData = result.summary;
+      const productsData = result.products;
       
       setSummary(summaryData);
       setProducts(productsData);
