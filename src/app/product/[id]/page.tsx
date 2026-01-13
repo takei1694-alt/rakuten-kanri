@@ -57,8 +57,18 @@ export default function ProductDetailPage() {
       setDetail(detailData);
       
       // SEOデータは期間に関係なく取得
-      const seo = await getSeoData(productId);
-      setSeoData(seo);
+    const seoRaw = await getSeoData(productId);
+        const seoFormatted = {
+          dates: seoRaw.map(item => item.searchDate),
+          data: seoRaw.map(item => ({
+            keyword: item.keyword,
+            currentRank: item.currentRank,
+            previousRank: item.previousRank,
+            rankChange: item.rankChange,
+            searchDate: item.searchDate,
+          }))
+        };
+        setSeoData(seoFormatted);
       
     } catch (err) {
       setError(err instanceof Error ? err.message : 'データの取得に失敗しました');
