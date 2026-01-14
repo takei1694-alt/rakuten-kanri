@@ -66,12 +66,12 @@ export default function HomePage() {
         </div>
 
         <PeriodSelector
-          period={period}
-          setPeriod={setPeriod}
+          value={period}
+          onChange={setPeriod}
           startDate={startDate}
-          setStartDate={setStartDate}
           endDate={endDate}
-          setEndDate={setEndDate}
+          onStartDateChange={setStartDate}
+          onEndDateChange={setEndDate}
         />
 
         {error && (
@@ -86,7 +86,7 @@ export default function HomePage() {
           </div>
         ) : (
           <>
-            <SummaryCards summary={summary} />
+            <SummaryCards data={summary} loading={loading} />
             <div className="mt-8">
               <div className="mb-4">
                 <input
@@ -97,7 +97,7 @@ export default function HomePage() {
                   className="w-full max-w-md px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
-              <ProductTable products={filteredProducts} period={period} />
+              <ProductTable products={filteredProducts} loading={loading} period={period} />
             </div>
           </>
         )}
