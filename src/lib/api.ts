@@ -80,24 +80,30 @@ export interface ProductDetailData {
   skuList: SkuData[];
 }
 
+// KeywordData: 広告キーワードの集計データ
 export interface KeywordData {
   keyword: string;
   sales: number;
   orders: number;
   cpc: number;
   cvr: number;
+  ctr: number;
   roas: number;
   impressions: number;
   clicks: number;
   cost: number;
+  adCost: number;
 }
 
+// DailyKeywordData: 日別の広告キーワードデータ
+// page.tsxのAdsTabで day.keywords.find(k => k.keyword === ...) として使用
 export interface DailyKeywordData {
   date: string;
-  keywords: string[];
-  data: KeywordData[];
+  keywords: KeywordData[];  // KeywordData[] に変更（string[]ではない）
   total: KeywordData;
 }
+
+// SeoKeywordData: SEO順位データ
 export interface SeoKeywordData {
   keyword: string;
   rankings: { [date: string]: number };
