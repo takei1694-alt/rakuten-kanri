@@ -340,7 +340,7 @@ export async function getKeywords(productId: string, period: Period, startDate?:
   return [];
 }
 
-export async function getKeywordsDaily(productId: string, period: Period, startDate?: string, endDate?: string): Promise<DailyKeywordData | null> {
+export async function getKeywordsDaily(productId: string, period: Period, startDate?: string, endDate?: string): Promise<{ keywords: string[]; data: DailyKeywordData[] } | null> {
   // キーワード日別データはまだSupabaseに移行していないため、nullを返す
   return null;
 }
