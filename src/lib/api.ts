@@ -4,6 +4,10 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 const supabase = createClient(supabaseUrl, supabaseKey);
 
+// ==========================================
+// 型定義
+// ==========================================
+
 export type Period = 'week' | '2weeks' | 'month' | '3months' | 'year' | 'custom';
 
 export interface SummaryData {
@@ -76,6 +80,51 @@ export interface ProductDetailData {
   skuList: SkuData[];
 }
 
+export interface KeywordData {
+  keyword: string;
+  sales: number;
+  orders: number;
+  cpc: number;
+  cvr: number;
+  roas: number;
+  impressions: number;
+  clicks: number;
+  cost: number;
+}
+
+export interface DailyKeywordData {
+  date: string;
+  keywords: string[];
+  data: KeywordData[];
+}
+
+export interface SeoKeywordData {
+  keyword: string;
+  dates: string[];
+  data: { date: string; rank: number }[];
+}
+
+// ==========================================
+// ユーティリティ関数
+// ==========================================
+
+export function formatCurrency(value: number): string {
+  return new Intl.NumberFormat('ja-JP', {
+    style: 'currency',
+    currency: 'JPY',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0
+  }).format(value);
+}
+
+export function formatNumber(value: number): string {
+  return new Intl.NumberFormat('ja-JP').format(value);
+}
+
+export function formatPercent(value: number): string {
+  return value.toFixed(1) + '%';
+}
+
 function getDateRange(period: Period, startDate?: string, endDate?: string): { start: Date; end: Date } {
   const end = new Date();
   const start = new Date();
@@ -110,6 +159,10 @@ function getDateRange(period: Period, startDate?: string, endDate?: string): { s
 function formatDate(date: Date): string {
   return date.toISOString().split('T')[0];
 }
+
+// ==========================================
+// API関数
+// ==========================================
 
 export async function getSummary(period: Period, startDate?: string, endDate?: string): Promise<SummaryData> {
   const { start, end } = getDateRange(period, startDate, endDate);
@@ -282,20 +335,18 @@ export async function getProductDetail(productId: string, period: Period, startD
     skuList
   };
 }
-// ユーティリティ関数
-export function formatCurrency(value: number): string {
-  return new Intl.NumberFormat('ja-JP', {
-    style: 'currency',
-    currency: 'JPY',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0
-  }).format(value);
+
+export async function getKeywords(productId: string, period: Period, startDate?: string, endDate?: string): Promise<KeywordData[]> {
+  // キーワードデータはまだSupabaseに移行していないため、空配列を返す
+  return [];
 }
 
-export function formatNumber(value: number): string {
-  return new Intl.NumberFormat('ja-JP').format(value);
+export async function getKeywordsDaily(productId: string, period: Period, startDate?: string, endDate?: string): Promise<DailyKeywordData | null> {
+  // キーワード日別データはまだSupabaseに移行していないため、nullを返す
+  return null;
 }
 
-export function formatPercent(value: number): string {
-  return value.toFixed(1) + '%';
+export async function getSeoData(productId: string, period: Period, startDate?: string, endDate?: string): Promise<SeoKeywordData | null> {
+  // SEOデータはまだSupabaseに移行していないため、nullを返す
+  return null;
 }
