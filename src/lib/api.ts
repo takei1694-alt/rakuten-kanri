@@ -96,8 +96,8 @@ export interface DailyKeywordData {
   date: string;
   keywords: string[];
   data: KeywordData[];
+  total: KeywordData;
 }
-
 export interface SeoKeywordData {
   keyword: string;
   rankings: { [date: string]: number };
