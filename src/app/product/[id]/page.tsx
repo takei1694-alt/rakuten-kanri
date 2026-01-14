@@ -57,7 +57,7 @@ export default function ProductDetailPage() {
       setDetail(detailData);
       
       // SEOデータは期間に関係なく取得
-      const seo = await getSeoData(productId);
+      const seo = await getSeoData(productId, period, period === 'custom' ? startDate : undefined, period === 'custom' ? endDate : undefined);
       setSeoData(seo);
       
     } catch (err) {
