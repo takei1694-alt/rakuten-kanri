@@ -345,7 +345,7 @@ export async function getKeywordsDaily(productId: string, period: Period, startD
   return null;
 }
 
-export async function getSeoData(productId: string, period: Period, startDate?: string, endDate?: string): Promise<SeoKeywordData | null> {
+export async function getSeoData(productId: string, period: Period, startDate?: string, endDate?: string): Promise<{ dates: string[]; data: SeoKeywordData[] } | null> {
   // SEOデータはまだSupabaseに移行していないため、nullを返す
   return null;
 }
