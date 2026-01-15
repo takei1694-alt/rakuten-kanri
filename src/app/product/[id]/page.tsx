@@ -132,14 +132,8 @@ export default function ProductDetailPage() {
             keywordsDaily={keywordsDaily}
           />
         );
-      case 'inventory':
-        return (
-          <div className="bg-white rounded-lg shadow p-6">
-            <h3 className="text-lg font-semibold mb-4">📦 在庫</h3>
-            <p className="text-gray-500">この商品の在庫情報を表示</p>
-            <div className="text-center text-gray-400 py-8">🚧 準備中</div>
-          </div>
-        );
+     case 'inventory':
+        return <InventoryTab inventory={inventory} />;
       case 'tasks':
         return (
           <div className="bg-white rounded-lg shadow p-6">
@@ -652,6 +646,58 @@ function AdsTab({
           </div>
         </div>
       )}
+    </div>
+  );
+}
+function InventoryTab({ inventory }: { inventory: InventoryData[] }) {
+  if (inventory.length === 0) {
+    return (
+      <div className="bg-white rounded-lg shadow p-6">
+        <h3 className="text-lg font-semibold mb-4">📦 在庫</h3>
+        <p className="text-gray-500 text-center py-8">在庫データがありません</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="card overflow-hidden">
+      <div className="p-4 border-b border-gray-100">
+        <h3 className="font-semibold text-gray-900">在庫一覧 ({inventory.length}件)</h3>
+      </div>
+      <div className="overflow-x-auto">
+        <table className="data-table">
+          <thead>
+            <tr>
+              <th>SKU</th>
+              <th>バリエーション</th>
+              <th className="text-right">総在庫</th>
+              <th className="text-right">現在庫</th>
+              <th className="text-right">出荷中</th>
+              <th className="text-right">発注中</th>
+              <th className="text-right">単価</th>
+              <th className="text-right">在庫金額</th>
+              <th>更新日</th>
+            </tr>
+          </thead>
+          <tbody>
+            {inventory.map((item) => (
+              <tr key={item.skuId}>
+                <td className="font-medium">{item.skuId}</td>
+                <td className="text-gray-600">{item.skuInfo || '-'}</td>
+                <td className="text-right">{formatNumber(item.totalStock)}</td>
+                <td className={`text-right font-medium ${item.currentStock <= 5 ? 'text-red-600' : item.currentStock <= 10 ? 'text-amber-600' : ''}`}>
+                  {formatNumber(item.currentStock)}
+                </td>
+                <td className="text-right">{formatNumber(item.shippingStock)}</td>
+                <td className="text-right">{formatNumber(item.orderedStock)}</td>
+                <td className="text-right">{formatCurrency(item.unitCost)}</td>
+                <td className="text-right">{formatCurrency(item.stockValue)}</td>
+                <td className="text-gray-500">{item.lastUpdated}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
