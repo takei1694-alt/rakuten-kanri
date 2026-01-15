@@ -6,25 +6,21 @@ import SummaryCards from '@/components/SummaryCards';
 import ProductTable from '@/components/ProductTable';
 import { Period, SummaryData, ProductData, getSummary, getProducts } from '@/lib/api';
 
-// タブの定義
+// タブの定義（7タブに変更）
 const TABS = [
+  { id: 'realtime', name: 'リアルタイム' },
   { id: 'products', name: '商品一覧' },
   { id: 'sales', name: '売上利益' },
-  { id: 'ads', name: '広告全体' },
-  { id: 'keywords', name: 'キーワード別' },
+  { id: 'ads', name: '広告' },
   { id: 'seo', name: 'SEO' },
   { id: 'inventory', name: '在庫' },
-  { id: 'tasks', name: 'タスク' },
-  { id: 'memos', name: 'メモ' },
-  { id: 'actions', name: '自社施策' },
-  { id: 'competitors', name: '競合変化' },
   { id: 'unlisted', name: '未出品' },
 ] as const;
 
 type TabId = typeof TABS[number]['id'];
 
 export default function HomePage() {
-  const [activeTab, setActiveTab] = useState<TabId>('products');
+  const [activeTab, setActiveTab] = useState<TabId>('realtime');
   const [period, setPeriod] = useState<Period>('month');
   const [startDate, setStartDate] = useState<string>('');
   const [endDate, setEndDate] = useState<string>('');
@@ -73,28 +69,20 @@ export default function HomePage() {
   // タブコンテンツのレンダリング
   const renderTabContent = () => {
     switch (activeTab) {
+      case 'realtime':
+        return <RealtimeTab />;
       case 'products':
         return <ProductTable products={filteredProducts} loading={loading} period={period} />;
       case 'sales':
-        return <ComingSoon title="売上利益" />;
+        return <SalesTab products={filteredProducts} />;
       case 'ads':
-        return <ComingSoon title="広告全体" />;
-      case 'keywords':
-        return <ComingSoon title="キーワード別" />;
+        return <AdsTab />;
       case 'seo':
-        return <ComingSoon title="SEO順位" />;
+        return <SeoTab />;
       case 'inventory':
-        return <ComingSoon title="在庫管理" />;
-      case 'tasks':
-        return <ComingSoon title="タスク管理" />;
-      case 'memos':
-        return <ComingSoon title="メモ" />;
-      case 'actions':
-        return <ComingSoon title="自社施策" />;
-      case 'competitors':
-        return <ComingSoon title="競合変化" />;
+        return <InventoryTab />;
       case 'unlisted':
-        return <ComingSoon title="未出品商品" />;
+        return <UnlistedTab />;
       default:
         return null;
     }
@@ -153,16 +141,18 @@ export default function HomePage() {
               </nav>
             </div>
 
-            {/* 検索バー */}
-            <div className="mt-6 mb-4">
-              <input
-                type="text"
-                placeholder="商品ID・商品名で検索..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full max-w-md px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-            </div>
+            {/* 検索バー（商品一覧タブのみ表示） */}
+            {(activeTab === 'products' || activeTab === 'sales') && (
+              <div className="mt-6 mb-4">
+                <input
+                  type="text"
+                  placeholder="商品ID・商品名で検索..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full max-w-md px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+            )}
 
             {/* タブコンテンツ */}
             <div className="mt-4">
@@ -175,13 +165,245 @@ export default function HomePage() {
   );
 }
 
-// 準備中コンポーネント
-function ComingSoon({ title }: { title: string }) {
+// ==========================================
+// リアルタイムタブ
+// ==========================================
+function RealtimeTab() {
   return (
-    <div className="bg-white rounded-lg shadow p-8 text-center">
-      <div className="text-gray-400 text-5xl mb-4">🚧</div>
-      <h3 className="text-xl font-semibold text-gray-700 mb-2">{title}</h3>
-      <p className="text-gray-500">この機能は準備中です</p>
+    <div className="bg-white rounded-lg shadow p-6">
+      <h3 className="text-lg font-semibold mb-4">📡 リアルタイム</h3>
+      <p className="text-gray-500 mb-4">売上・メモ・施策・競合・タスクを時系列で表示</p>
+      
+      {/* サンプル表示 */}
+      <div className="space-y-4">
+        <div className="flex items-start space-x-3 p-3 bg-green-50 rounded-lg">
+          <span className="text-green-500">💰</span>
+          <div>
+            <p className="font-medium">新規注文</p>
+            <p className="text-sm text-gray-600">猫マット - ¥2,580</p>
+            <p className="text-xs text-gray-400">2分前</p>
+          </div>
+        </div>
+        
+        <div className="flex items-start space-x-3 p-3 bg-blue-50 rounded-lg">
+          <span className="text-blue-500">📝</span>
+          <div>
+            <p className="font-medium">メモ追加</p>
+            <p className="text-sm text-gray-600">ヘドロトルネード - 画像変更予定</p>
+            <p className="text-xs text-gray-400">15分前</p>
+          </div>
+        </div>
+        
+        <div className="flex items-start space-x-3 p-3 bg-yellow-50 rounded-lg">
+          <span className="text-yellow-500">⚠️</span>
+          <div>
+            <p className="font-medium">在庫アラート</p>
+            <p className="text-sm text-gray-600">タオルクリップ - 在庫残り5個</p>
+            <p className="text-xs text-gray-400">1時間前</p>
+          </div>
+        </div>
+        
+        <div className="flex items-start space-x-3 p-3 bg-purple-50 rounded-lg">
+          <span className="text-purple-500">👀</span>
+          <div>
+            <p className="font-medium">競合変化</p>
+            <p className="text-sm text-gray-600">A社 - 価格を¥200値下げ</p>
+            <p className="text-xs text-gray-400">3時間前</p>
+          </div>
+        </div>
+        
+        <div className="flex items-start space-x-3 p-3 bg-orange-50 rounded-lg">
+          <span className="text-orange-500">🎯</span>
+          <div>
+            <p className="font-medium">自社施策</p>
+            <p className="text-sm text-gray-600">猫マット - クーポン10%OFF開始</p>
+            <p className="text-xs text-gray-400">5時間前</p>
+          </div>
+        </div>
+      </div>
+      
+      <p className="text-center text-gray-400 mt-6 text-sm">
+        ※ 実際のデータ連携は次のステップで実装します
+      </p>
+    </div>
+  );
+}
+
+// ==========================================
+// 売上利益タブ
+// ==========================================
+function SalesTab({ products }: { products: ProductData[] }) {
+  const [sortBy, setSortBy] = useState<'sales' | 'profit' | 'profitRate'>('sales');
+  const [sortOrder, setSortOrder] = useState<'desc' | 'asc'>('desc');
+
+  const sortedProducts = [...products].sort((a, b) => {
+    let aVal = 0, bVal = 0;
+    if (sortBy === 'sales') {
+      aVal = a.sales || 0;
+      bVal = b.sales || 0;
+    } else if (sortBy === 'profit') {
+      aVal = a.profit || 0;
+      bVal = b.profit || 0;
+    } else if (sortBy === 'profitRate') {
+      aVal = a.profitRate || 0;
+      bVal = b.profitRate || 0;
+    }
+    return sortOrder === 'desc' ? bVal - aVal : aVal - bVal;
+  });
+
+  const handleSort = (column: 'sales' | 'profit' | 'profitRate') => {
+    if (sortBy === column) {
+      setSortOrder(sortOrder === 'desc' ? 'asc' : 'desc');
+    } else {
+      setSortBy(column);
+      setSortOrder('desc');
+    }
+  };
+
+  const SortIcon = ({ column }: { column: 'sales' | 'profit' | 'profitRate' }) => (
+    <span className="ml-1">
+      {sortBy === column ? (sortOrder === 'desc' ? '▼' : '▲') : '▽'}
+    </span>
+  );
+
+  return (
+    <div className="bg-white rounded-lg shadow overflow-hidden">
+      <table className="min-w-full divide-y divide-gray-200">
+        <thead className="bg-gray-50">
+          <tr>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">商品名</th>
+            <th 
+              className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase cursor-pointer hover:bg-gray-100"
+              onClick={() => handleSort('sales')}
+            >
+              売上<SortIcon column="sales" />
+            </th>
+            <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">件数</th>
+            <th 
+              className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase cursor-pointer hover:bg-gray-100"
+              onClick={() => handleSort('profit')}
+            >
+              利益<SortIcon column="profit" />
+            </th>
+            <th 
+              className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase cursor-pointer hover:bg-gray-100"
+              onClick={() => handleSort('profitRate')}
+            >
+              利益率<SortIcon column="profitRate" />
+            </th>
+          </tr>
+        </thead>
+        <tbody className="bg-white divide-y divide-gray-200">
+          {sortedProducts.map((product) => (
+            <tr key={product.productId} className="hover:bg-gray-50">
+              <td className="px-6 py-4">
+                <div className="font-medium text-gray-900">{product.productName || product.productId}</div>
+                <div className="text-sm text-gray-500">{product.productId}</div>
+              </td>
+              <td className="px-6 py-4 text-right">¥{(product.sales || 0).toLocaleString()}</td>
+              <td className="px-6 py-4 text-right">{product.orderCount || 0}件</td>
+              <td className="px-6 py-4 text-right text-green-600">¥{(product.profit || 0).toLocaleString()}</td>
+              <td className="px-6 py-4 text-right text-green-600">{(product.profitRate || 0).toFixed(1)}%</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+// ==========================================
+// 広告タブ
+// ==========================================
+function AdsTab() {
+  const [subTab, setSubTab] = useState<'all' | 'keywords'>('all');
+  const [viewMode, setViewMode] = useState<'daily' | 'average'>('daily');
+
+  return (
+    <div className="bg-white rounded-lg shadow p-6">
+      {/* サブタブ */}
+      <div className="flex space-x-4 mb-4">
+        <button
+          onClick={() => setSubTab('all')}
+          className={`px-4 py-2 rounded-lg ${subTab === 'all' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600'}`}
+        >
+          広告全体
+        </button>
+        <button
+          onClick={() => setSubTab('keywords')}
+          className={`px-4 py-2 rounded-lg ${subTab === 'keywords' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600'}`}
+        >
+          キーワード別
+        </button>
+      </div>
+
+      {/* 表示切り替え */}
+      <div className="flex space-x-2 mb-4">
+        <span className="text-gray-500">表示:</span>
+        <button
+          onClick={() => setViewMode('average')}
+          className={`px-3 py-1 rounded ${viewMode === 'average' ? 'bg-gray-800 text-white' : 'bg-gray-200'}`}
+        >
+          平均
+        </button>
+        <button
+          onClick={() => setViewMode('daily')}
+          className={`px-3 py-1 rounded ${viewMode === 'daily' ? 'bg-gray-800 text-white' : 'bg-gray-200'}`}
+        >
+          日別
+        </button>
+      </div>
+
+      {/* コンテンツ */}
+      <div className="text-center text-gray-400 py-8">
+        🚧 {subTab === 'all' ? '広告全体' : 'キーワード別'}データを表示予定<br />
+        （{viewMode === 'daily' ? '日別' : '平均'}表示）
+      </div>
+    </div>
+  );
+}
+
+// ==========================================
+// SEOタブ
+// ==========================================
+function SeoTab() {
+  return (
+    <div className="bg-white rounded-lg shadow p-6">
+      <h3 className="text-lg font-semibold mb-4">🔍 SEO順位</h3>
+      <p className="text-gray-500">全商品のSEO順位を一覧表示</p>
+      <div className="text-center text-gray-400 py-8">
+        🚧 SEO順位データを表示予定
+      </div>
+    </div>
+  );
+}
+
+// ==========================================
+// 在庫タブ
+// ==========================================
+function InventoryTab() {
+  return (
+    <div className="bg-white rounded-lg shadow p-6">
+      <h3 className="text-lg font-semibold mb-4">📦 在庫管理</h3>
+      <p className="text-gray-500">全商品の在庫状況を一覧表示（アラート付き）</p>
+      <div className="text-center text-gray-400 py-8">
+        🚧 在庫データを表示予定
+      </div>
+    </div>
+  );
+}
+
+// ==========================================
+// 未出品タブ
+// ==========================================
+function UnlistedTab() {
+  return (
+    <div className="bg-white rounded-lg shadow p-6">
+      <h3 className="text-lg font-semibold mb-4">📋 未出品商品</h3>
+      <p className="text-gray-500">未出品商品の管理</p>
+      <div className="text-center text-gray-400 py-8">
+        🚧 未出品商品管理を表示予定
+      </div>
     </div>
   );
 }
