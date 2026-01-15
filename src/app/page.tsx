@@ -301,7 +301,7 @@ function SalesTab({ products }: { products: ProductData[] }) {
                 <div className="text-sm text-gray-500">{product.productId}</div>
               </td>
               <td className="px-6 py-4 text-right">¥{(product.sales || 0).toLocaleString()}</td>
-              <td className="px-6 py-4 text-right">{product.quantity|| 0}件</td>
+              <td className="px-6 py-4 text-right">{product.orders || 0}件</td>
               <td className="px-6 py-4 text-right text-green-600">¥{(product.profit || 0).toLocaleString()}</td>
               <td className="px-6 py-4 text-right text-green-600">{(product.profitRate || 0).toFixed(1)}%</td>
             </tr>
