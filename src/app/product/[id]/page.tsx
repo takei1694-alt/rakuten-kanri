@@ -175,10 +175,16 @@ export default function ProductDetailPage() {
         <div className="border-b border-gray-200 mb-6">
           <nav className="flex gap-1">
             {[
+              {[
               { id: 'sales', label: '売上' },
               { id: 'sku', label: 'SKU' },
               { id: 'seo', label: 'SEO' },
               { id: 'ads', label: '広告' },
+              { id: 'inventory', label: '在庫' },
+              { id: 'tasks', label: 'タスク' },
+              { id: 'memos', label: 'メモ' },
+              { id: 'actions', label: '自社施策' },
+              { id: 'competitors', label: '競合' },
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -212,6 +218,45 @@ export default function ProductDetailPage() {
             keywordsDaily={keywordsDaily}
           />
         )}
+            {activeTab === 'inventory' && (
+              <div className="bg-white rounded-lg shadow p-6">
+                <h3 className="text-lg font-semibold mb-4">📦 在庫</h3>
+                <p className="text-gray-500">この商品の在庫情報を表示</p>
+                <div className="text-center text-gray-400 py-8">🚧 準備中</div>
+              </div>
+            )}
+
+            {activeTab === 'tasks' && (
+              <div className="bg-white rounded-lg shadow p-6">
+                <h3 className="text-lg font-semibold mb-4">✅ タスク</h3>
+                <p className="text-gray-500">この商品のタスク管理</p>
+                <div className="text-center text-gray-400 py-8">🚧 準備中</div>
+              </div>
+            )}
+
+            {activeTab === 'memos' && (
+              <div className="bg-white rounded-lg shadow p-6">
+                <h3 className="text-lg font-semibold mb-4">📝 メモ</h3>
+                <p className="text-gray-500">この商品のメモ</p>
+                <div className="text-center text-gray-400 py-8">🚧 準備中</div>
+              </div>
+            )}
+
+            {activeTab === 'actions' && (
+              <div className="bg-white rounded-lg shadow p-6">
+                <h3 className="text-lg font-semibold mb-4">🎯 自社施策</h3>
+                <p className="text-gray-500">この商品の施策履歴</p>
+                <div className="text-center text-gray-400 py-8">🚧 準備中</div>
+              </div>
+            )}
+
+            {activeTab === 'competitors' && (
+              <div className="bg-white rounded-lg shadow p-6">
+                <h3 className="text-lg font-semibold mb-4">👀 競合</h3>
+                <p className="text-gray-500">この商品の競合情報</p>
+                <div className="text-center text-gray-400 py-8">🚧 準備中</div>
+              </div>
+            )}
       </main>
     </div>
   );
