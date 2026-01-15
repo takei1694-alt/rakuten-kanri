@@ -40,6 +40,7 @@ export default function ProductDetailPage() {
   const [keywords, setKeywords] = useState<KeywordData[]>([]);
   const [keywordsDaily, setKeywordsDaily] = useState<{ keywords: string[]; data: DailyKeywordData[] } | null>(null);
   const [seoData, setSeoData] = useState<{ dates: string[]; data: SeoKeywordData[] } | null>(null);
+  const [inventory, setInventory] = useState<InventoryData[]>([]);
   
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
