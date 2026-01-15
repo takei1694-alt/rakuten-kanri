@@ -64,6 +64,8 @@ export default function ProductDetailPage() {
       
       const seo = await getSeoData(productId, period, period === 'custom' ? startDate : undefined, period === 'custom' ? endDate : undefined);
       setSeoData(seo);
+      const inv = await getInventory(productId);
+      setInventory(inv);
       
     } catch (err) {
       setError(err instanceof Error ? err.message : 'データの取得に失敗しました');
