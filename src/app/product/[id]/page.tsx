@@ -175,7 +175,6 @@ export default function ProductDetailPage() {
         <div className="border-b border-gray-200 mb-6">
           <nav className="flex gap-1">
             {[
-              {[
               { id: 'sales', label: '売上' },
               { id: 'sku', label: 'SKU' },
               { id: 'seo', label: 'SEO' },
