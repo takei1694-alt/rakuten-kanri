@@ -45,6 +45,7 @@ export default function ProductDetailPage() {
   const [splitMode, setSplitMode] = useState(false);
   const [rightTab, setRightTab] = useState<TabType>('ads');
   const [splitPosition, setSplitPosition] = useState(50);
+
   const fetchData = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -58,7 +59,6 @@ export default function ProductDetailPage() {
       );
       setDetail(detailData);
       
-      // SEOデータは期間に関係なく取得
       const seo = await getSeoData(productId, period, period === 'custom' ? startDate : undefined, period === 'custom' ? endDate : undefined);
       setSeoData(seo);
       
@@ -70,7 +70,7 @@ export default function ProductDetailPage() {
   }, [productId, period, startDate, endDate]);
 
   const fetchAdsData = useCallback(async () => {
-    if (activeTab !== 'ads') return;
+    if (activeTab !== 'ads' && rightTab !== 'ads') return;
     
     try {
       if (adsViewMode === 'average') {
@@ -93,7 +93,7 @@ export default function ProductDetailPage() {
     } catch (err) {
       console.error('広告データ取得エラー:', err);
     }
-  }, [productId, period, startDate, endDate, activeTab, adsViewMode]);
+  }, [productId, period, startDate, endDate, activeTab, rightTab, adsViewMode]);
 
   useEffect(() => {
     if (period === 'custom') {
@@ -108,182 +108,6 @@ export default function ProductDetailPage() {
   useEffect(() => {
     fetchAdsData();
   }, [fetchAdsData]);
-
-  if (loading && !detail) {
-    return (
-      <div className="min-h-screen bg-gray-50">
-        <Header />
-        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="animate-pulse">
-            <div className="h-8 bg-gray-200 rounded w-64 mb-4"></div>
-            <div className="h-4 bg-gray-200 rounded w-32 mb-8"></div>
-            <div className="grid grid-cols-4 gap-4 mb-8">
-              {[...Array(8)].map((_, i) => (
-                <div key={i} className="h-24 bg-gray-200 rounded"></div>
-              ))}
-            </div>
-          </div>
-        </main>
-      </div>
-    );
-  }
-
-  return (
-    <div className="min-h-screen bg-gray-50">
-      <Header />
-      
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* 戻るボタン */}
-        <button
-          onClick={() => router.push('/')}
-          className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700 mb-4"
-        >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-          </svg>
-          一覧に戻る
-        </button>
-
-        {/* 商品名 */}
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold text-gray-900">
-            {detail?.productName || productId}
-          </h1>
-          <p className="text-sm text-gray-500 mt-1">{productId}</p>
-        </div>
-
-        {/* 期間選択 */}
-        <div className="mb-6">
-          <PeriodSelector
-            value={period}
-            onChange={setPeriod}
-            startDate={startDate}
-            endDate={endDate}
-            onStartDateChange={setStartDate}
-            onEndDateChange={setEndDate}
-          />
-        </div>
-
-        {/* エラー表示 */}
-        {error && (
-          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
-            {error}
-          </div>
-        )}
-
-        {/* タブ */}
-        <div className="border-b border-gray-200 mb-6">
-          <nav className="flex gap-1">
-            {[
-              { id: 'sales', label: '売上' },
-              { id: 'sku', label: 'SKU' },
-              { id: 'seo', label: 'SEO' },
-              { id: 'ads', label: '広告' },
-              { id: 'inventory', label: '在庫' },
-              { id: 'tasks', label: 'タスク' },
-              { id: 'memos', label: 'メモ' },
-              { id: 'actions', label: '自社施策' },
-              { id: 'competitors', label: '競合' },
-            ].map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id as TabType)}
-                className={`tab-button ${activeTab === tab.id ? 'active' : ''}`}
-              >
-                {tab.label}
-              </button>
-            ))}
-            {/* 分割ボタン */}
-            <button
-              onClick={() => setSplitMode(!splitMode)}
-             className={`ml-4 px-3 py-1 text-sm rounded ${splitMode ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'}`}
-            >
-              {splitMode ? '✕ 分割解除' : '⫽ 2画面分割'}
-            </button>
-          </nav>
-        </div>
-{/* タブコンテンツ */}
-        {!splitMode ? (
-          // 通常表示（1画面）
-          <div>
-            {renderTabContent(activeTab)}
-          </div>
-        ) : (
-          // 分割表示（2画面）
-          <div className="flex gap-2">
-            {/* 左パネル */}
-            <div style={{ width: `${splitPosition}%` }} className="min-w-[200px]">
-              <div className="mb-2">
-                <select
-                  value={activeTab}
-                  onChange={(e) => setActiveTab(e.target.value as TabType)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
-                >
-                  <option value="sales">売上</option>
-                  <option value="sku">SKU</option>
-                  <option value="seo">SEO</option>
-                  <option value="ads">広告</option>
-                  <option value="inventory">在庫</option>
-                  <option value="tasks">タスク</option>
-                  <option value="memos">メモ</option>
-                  <option value="actions">自社施策</option>
-                  <option value="competitors">競合</option>
-                </select>
-              </div>
-              {renderTabContent(activeTab)}
-            </div>
-
-            {/* ドラッグバー */}
-            <div
-              className="w-2 bg-gray-300 hover:bg-blue-400 cursor-col-resize rounded flex-shrink-0"
-              onMouseDown={(e) => {
-                e.preventDefault();
-                const startX = e.clientX;
-                const startPos = splitPosition;
-                
-                const onMouseMove = (e: MouseEvent) => {
-                  const diff = e.clientX - startX;
-                  const containerWidth = (e.target as HTMLElement)?.parentElement?.parentElement?.offsetWidth || 1000;
-                  const newPos = startPos + (diff / containerWidth) * 100;
-                  setSplitPosition(Math.max(20, Math.min(80, newPos)));
-                };
-                
-                const onMouseUp = () => {
-                  document.removeEventListener('mousemove', onMouseMove);
-                  document.removeEventListener('mouseup', onMouseUp);
-                };
-                
-                document.addEventListener('mousemove', onMouseMove);
-                document.addEventListener('mouseup', onMouseUp);
-              }}
-            />
-
-            {/* 右パネル */}
-            <div style={{ width: `${100 - splitPosition}%` }} className="min-w-[200px]">
-              <div className="mb-2">
-                <select
-                  value={rightTab}
-                  onChange={(e) => setRightTab(e.target.value as TabType)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
-                >
-                  <option value="sales">売上</option>
-                  <option value="sku">SKU</option>
-                  <option value="seo">SEO</option>
-                  <option value="ads">広告</option>
-                  <option value="inventory">在庫</option>
-                  <option value="tasks">タスク</option>
-                  <option value="memos">メモ</option>
-                  <option value="actions">自社施策</option>
-                  <option value="competitors">競合</option>
-                </select>
-              </div>
-              {renderTabContent(rightTab)}
-            </div>
-          </div>
-        )}
-      </main>
-    </div>
-  );
 
   // タブコンテンツを描画する関数
   function renderTabContent(tab: TabType) {
@@ -347,16 +171,173 @@ export default function ProductDetailPage() {
         return null;
     }
   }
+
+  if (loading && !detail) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Header />
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="animate-pulse">
+            <div className="h-8 bg-gray-200 rounded w-64 mb-4"></div>
+            <div className="h-4 bg-gray-200 rounded w-32 mb-8"></div>
+            <div className="grid grid-cols-4 gap-4 mb-8">
+              {[...Array(8)].map((_, i) => (
+                <div key={i} className="h-24 bg-gray-200 rounded"></div>
+              ))}
+            </div>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <Header />
+      
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <button
+          onClick={() => router.push('/')}
+          className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700 mb-4"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          </svg>
+          一覧に戻る
+        </button>
+
+        <div className="mb-6">
+          <h1 className="text-2xl font-bold text-gray-900">
+            {detail?.productName || productId}
+          </h1>
+          <p className="text-sm text-gray-500 mt-1">{productId}</p>
+        </div>
+
+        <div className="mb-6">
+          <PeriodSelector
+            value={period}
+            onChange={setPeriod}
+            startDate={startDate}
+            endDate={endDate}
+            onStartDateChange={setStartDate}
+            onEndDateChange={setEndDate}
+          />
+        </div>
+
+        {error && (
+          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
+            {error}
+          </div>
+        )}
+
+        <div className="border-b border-gray-200 mb-6">
+          <nav className="flex gap-1 items-center">
+            {[
+              { id: 'sales', label: '売上' },
+              { id: 'sku', label: 'SKU' },
+              { id: 'seo', label: 'SEO' },
+              { id: 'ads', label: '広告' },
+              { id: 'inventory', label: '在庫' },
+              { id: 'tasks', label: 'タスク' },
+              { id: 'memos', label: 'メモ' },
+              { id: 'actions', label: '自社施策' },
+              { id: 'competitors', label: '競合' },
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id as TabType)}
+                className={`tab-button ${activeTab === tab.id ? 'active' : ''}`}
+              >
+                {tab.label}
+              </button>
+            ))}
+            <button
+              onClick={() => setSplitMode(!splitMode)}
+              className={`ml-4 px-3 py-1 text-sm rounded ${splitMode ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'}`}
+            >
+              {splitMode ? '✕ 分割解除' : '⫽ 2画面分割'}
+            </button>
+          </nav>
+        </div>
+
+        {!splitMode ? (
+          <div>
+            {renderTabContent(activeTab)}
+          </div>
+        ) : (
+          <div className="flex gap-2">
+            <div style={{ width: `${splitPosition}%` }} className="min-w-[200px]">
+              <div className="mb-2">
+                <select
+                  value={activeTab}
+                  onChange={(e) => setActiveTab(e.target.value as TabType)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                >
+                  <option value="sales">売上</option>
+                  <option value="sku">SKU</option>
+                  <option value="seo">SEO</option>
+                  <option value="ads">広告</option>
+                  <option value="inventory">在庫</option>
+                  <option value="tasks">タスク</option>
+                  <option value="memos">メモ</option>
+                  <option value="actions">自社施策</option>
+                  <option value="competitors">競合</option>
+                </select>
+              </div>
+              {renderTabContent(activeTab)}
+            </div>
+
+            <div
+              className="w-2 bg-gray-300 hover:bg-blue-400 cursor-col-resize rounded flex-shrink-0"
+              onMouseDown={(e) => {
+                e.preventDefault();
+                const startX = e.clientX;
+                const startPos = splitPosition;
+                const onMouseMove = (e: MouseEvent) => {
+                  const diff = e.clientX - startX;
+                  const containerWidth = window.innerWidth * 0.8;
+                  const newPos = startPos + (diff / containerWidth) * 100;
+                  setSplitPosition(Math.max(20, Math.min(80, newPos)));
+                };
+                const onMouseUp = () => {
+                  document.removeEventListener('mousemove', onMouseMove);
+                  document.removeEventListener('mouseup', onMouseUp);
+                };
+                document.addEventListener('mousemove', onMouseMove);
+                document.addEventListener('mouseup', onMouseUp);
+              }}
+            />
+
+            <div style={{ width: `${100 - splitPosition}%` }} className="min-w-[200px]">
+              <div className="mb-2">
+                <select
+                  value={rightTab}
+                  onChange={(e) => setRightTab(e.target.value as TabType)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                >
+                  <option value="sales">売上</option>
+                  <option value="sku">SKU</option>
+                  <option value="seo">SEO</option>
+                  <option value="ads">広告</option>
+                  <option value="inventory">在庫</option>
+                  <option value="tasks">タスク</option>
+                  <option value="memos">メモ</option>
+                  <option value="actions">自社施策</option>
+                  <option value="competitors">競合</option>
+                </select>
+              </div>
+              {renderTabContent(rightTab)}
+            </div>
+          </div>
+        )}
       </main>
     </div>
   );
 }
 
-// 売上タブ
 function SalesTab({ detail }: { detail: ProductDetailData }) {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      {/* 売上系 */}
       <div className="card p-6">
         <h3 className="text-sm font-semibold text-gray-500 mb-4">📊 売上系</h3>
         <div className="grid grid-cols-2 gap-4">
@@ -374,8 +355,6 @@ function SalesTab({ detail }: { detail: ProductDetailData }) {
           </div>
         </div>
       </div>
-
-      {/* 利益系 */}
       <div className="card p-6">
         <h3 className="text-sm font-semibold text-gray-500 mb-4">💰 利益系</h3>
         <div className="grid grid-cols-2 gap-4">
@@ -397,8 +376,6 @@ function SalesTab({ detail }: { detail: ProductDetailData }) {
           </div>
         </div>
       </div>
-
-      {/* 費用系 */}
       <div className="card p-6">
         <h3 className="text-sm font-semibold text-gray-500 mb-4">💸 費用系</h3>
         <div className="grid grid-cols-2 gap-4">
@@ -420,8 +397,6 @@ function SalesTab({ detail }: { detail: ProductDetailData }) {
           </div>
         </div>
       </div>
-
-      {/* 広告系 */}
       <div className="card p-6">
         <h3 className="text-sm font-semibold text-gray-500 mb-4">📢 広告系</h3>
         <div className="grid grid-cols-2 gap-4">
@@ -449,7 +424,6 @@ function SalesTab({ detail }: { detail: ProductDetailData }) {
   );
 }
 
-// SKUタブ
 function SkuTab({ skuList }: { skuList: ProductDetailData['skuList'] }) {
   return (
     <div className="card overflow-hidden">
@@ -496,7 +470,6 @@ function SkuTab({ skuList }: { skuList: ProductDetailData['skuList'] }) {
   );
 }
 
-// SEOタブ
 function SeoTab({ data }: { data: { dates: string[]; data: SeoKeywordData[] } }) {
   const recentDates = data.dates.slice(-7);
   
@@ -542,7 +515,6 @@ function SeoTab({ data }: { data: { dates: string[]; data: SeoKeywordData[] } })
   );
 }
 
-// 広告タブ
 function AdsTab({
   viewMode,
   onViewModeChange,
@@ -558,7 +530,6 @@ function AdsTab({
 
   return (
     <div>
-      {/* 表示切替 */}
       <div className="flex items-center gap-4 mb-4">
         <div className="flex gap-2">
           <button
@@ -589,7 +560,6 @@ function AdsTab({
         )}
       </div>
 
-      {/* 日別表示 */}
       {viewMode === 'daily' && keywordsDaily && (
         <div className="card overflow-hidden">
           <div className="overflow-x-auto">
@@ -637,7 +607,6 @@ function AdsTab({
         </div>
       )}
 
-      {/* 平均表示 */}
       {viewMode === 'average' && keywords.length > 0 && (
         <div className="card overflow-hidden">
           <div className="overflow-x-auto">
