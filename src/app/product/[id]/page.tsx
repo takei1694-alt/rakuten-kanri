@@ -193,6 +193,13 @@ export default function ProductDetailPage() {
                 {tab.label}
               </button>
             ))}
+            {/* 分割ボタン */}
+            <button
+              onClick={() => setSplitMode(!splitMode)}
+             className={`ml-4 px-3 py-1 text-sm rounded ${splitMode ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'}`}
+            >
+              {splitMode ? '✕ 分割解除' : '⫽ 2画面分割'}
+            </button>
           </nav>
         </div>
 
