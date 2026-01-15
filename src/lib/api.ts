@@ -355,3 +355,51 @@ export async function getSeoData(productId: string, period: Period, startDate?: 
   // SEOデータはまだSupabaseに移行していないため、nullを返す
   return null;
 }
+// ... 既存のコード ...
+
+export async function getSeoData(productId: string, period: Period, startDate?: string, endDate?: string): Promise<{ dates: string[]; data: SeoKeywordData[] } | null> {
+  // SEOデータはまだSupabaseに移行していないため、nullを返す
+  return null;
+}
+
+// ↓↓↓ ここから下に追加 ↓↓↓
+
+// ==========================================
+// 在庫データ
+// ==========================================
+
+export interface InventoryData {
+  skuId: string;
+  skuInfo: string;
+  productName: string;
+  totalStock: number;
+  currentStock: number;
+  shippingStock: number;
+  orderedStock: number;
+  unitCost: number;
+  stockValue: number;
+  lastUpdated: string;
+}
+
+export async function getInventory(productId: string): Promise<InventoryData[]> {
+  const { data, error } = await supabase
+    .from('inventory')
+    .select('sku_id, sku_info, product_name, total_stock, current_stock, shipping_stock, ordered_stock, unit_cost, stock_value, last_updated')
+    .eq('product_id', productId)
+    .order('sku_id');
+
+  if (error) throw error;
+
+  return (data || []).map(row => ({
+    skuId: row.sku_id || '',
+    skuInfo: row.sku_info || '',
+    productName: row.product_name || '',
+    totalStock: row.total_stock || 0,
+    currentStock: row.current_stock || 0,
+    shippingStock: row.shipping_stock || 0,
+    orderedStock: row.ordered_stock || 0,
+    unitCost: row.unit_cost || 0,
+    stockValue: row.stock_value || 0,
+    lastUpdated: row.last_updated || ''
+  }));
+}
