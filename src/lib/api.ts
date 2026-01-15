@@ -80,7 +80,6 @@ export interface ProductDetailData {
   skuList: SkuData[];
 }
 
-// KeywordData: 広告キーワードの集計データ
 export interface KeywordData {
   keyword: string;
   sales: number;
@@ -95,18 +94,28 @@ export interface KeywordData {
   adCost: number;
 }
 
-// DailyKeywordData: 日別の広告キーワードデータ
-// page.tsxのAdsTabで day.keywords.find(k => k.keyword === ...) として使用
 export interface DailyKeywordData {
   date: string;
-  keywords: KeywordData[];  // KeywordData[] に変更（string[]ではない）
+  keywords: KeywordData[];
   total: KeywordData;
 }
 
-// SeoKeywordData: SEO順位データ
 export interface SeoKeywordData {
   keyword: string;
   rankings: { [date: string]: number };
+}
+
+export interface InventoryData {
+  skuId: string;
+  skuInfo: string;
+  productName: string;
+  totalStock: number;
+  currentStock: number;
+  shippingStock: number;
+  orderedStock: number;
+  unitCost: number;
+  stockValue: number;
+  lastUpdated: string;
 }
 
 // ==========================================
@@ -342,43 +351,15 @@ export async function getProductDetail(productId: string, period: Period, startD
 }
 
 export async function getKeywords(productId: string, period: Period, startDate?: string, endDate?: string): Promise<KeywordData[]> {
-  // キーワードデータはまだSupabaseに移行していないため、空配列を返す
   return [];
 }
 
 export async function getKeywordsDaily(productId: string, period: Period, startDate?: string, endDate?: string): Promise<{ keywords: string[]; data: DailyKeywordData[] } | null> {
-  // キーワード日別データはまだSupabaseに移行していないため、nullを返す
   return null;
 }
 
 export async function getSeoData(productId: string, period: Period, startDate?: string, endDate?: string): Promise<{ dates: string[]; data: SeoKeywordData[] } | null> {
-  // SEOデータはまだSupabaseに移行していないため、nullを返す
   return null;
-}
-// ... 既存のコード ...
-
-export async function getSeoData(productId: string, period: Period, startDate?: string, endDate?: string): Promise<{ dates: string[]; data: SeoKeywordData[] } | null> {
-  // SEOデータはまだSupabaseに移行していないため、nullを返す
-  return null;
-}
-
-// ↓↓↓ ここから下に追加 ↓↓↓
-
-// ==========================================
-// 在庫データ
-// ==========================================
-
-export interface InventoryData {
-  skuId: string;
-  skuInfo: string;
-  productName: string;
-  totalStock: number;
-  currentStock: number;
-  shippingStock: number;
-  orderedStock: number;
-  unitCost: number;
-  stockValue: number;
-  lastUpdated: string;
 }
 
 export async function getInventory(productId: string): Promise<InventoryData[]> {
