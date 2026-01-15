@@ -202,67 +202,151 @@ export default function ProductDetailPage() {
             </button>
           </nav>
         </div>
+{/* タブコンテンツ */}
+        {!splitMode ? (
+          // 通常表示（1画面）
+          <div>
+            {renderTabContent(activeTab)}
+          </div>
+        ) : (
+          // 分割表示（2画面）
+          <div className="flex gap-2">
+            {/* 左パネル */}
+            <div style={{ width: `${splitPosition}%` }} className="min-w-[200px]">
+              <div className="mb-2">
+                <select
+                  value={activeTab}
+                  onChange={(e) => setActiveTab(e.target.value as TabType)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                >
+                  <option value="sales">売上</option>
+                  <option value="sku">SKU</option>
+                  <option value="seo">SEO</option>
+                  <option value="ads">広告</option>
+                  <option value="inventory">在庫</option>
+                  <option value="tasks">タスク</option>
+                  <option value="memos">メモ</option>
+                  <option value="actions">自社施策</option>
+                  <option value="competitors">競合</option>
+                </select>
+              </div>
+              {renderTabContent(activeTab)}
+            </div>
 
-        {/* タブコンテンツ */}
-        {activeTab === 'sales' && detail && (
-          <SalesTab detail={detail} />
+            {/* ドラッグバー */}
+            <div
+              className="w-2 bg-gray-300 hover:bg-blue-400 cursor-col-resize rounded flex-shrink-0"
+              onMouseDown={(e) => {
+                e.preventDefault();
+                const startX = e.clientX;
+                const startPos = splitPosition;
+                
+                const onMouseMove = (e: MouseEvent) => {
+                  const diff = e.clientX - startX;
+                  const containerWidth = (e.target as HTMLElement)?.parentElement?.parentElement?.offsetWidth || 1000;
+                  const newPos = startPos + (diff / containerWidth) * 100;
+                  setSplitPosition(Math.max(20, Math.min(80, newPos)));
+                };
+                
+                const onMouseUp = () => {
+                  document.removeEventListener('mousemove', onMouseMove);
+                  document.removeEventListener('mouseup', onMouseUp);
+                };
+                
+                document.addEventListener('mousemove', onMouseMove);
+                document.addEventListener('mouseup', onMouseUp);
+              }}
+            />
+
+            {/* 右パネル */}
+            <div style={{ width: `${100 - splitPosition}%` }} className="min-w-[200px]">
+              <div className="mb-2">
+                <select
+                  value={rightTab}
+                  onChange={(e) => setRightTab(e.target.value as TabType)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                >
+                  <option value="sales">売上</option>
+                  <option value="sku">SKU</option>
+                  <option value="seo">SEO</option>
+                  <option value="ads">広告</option>
+                  <option value="inventory">在庫</option>
+                  <option value="tasks">タスク</option>
+                  <option value="memos">メモ</option>
+                  <option value="actions">自社施策</option>
+                  <option value="competitors">競合</option>
+                </select>
+              </div>
+              {renderTabContent(rightTab)}
+            </div>
+          </div>
         )}
-        
-        {activeTab === 'sku' && detail && (
-          <SkuTab skuList={detail.skuList} />
-        )}
-        
-        {activeTab === 'seo' && seoData && (
-          <SeoTab data={seoData} />
-        )}
-        
-        {activeTab === 'ads' && (
+      </main>
+    </div>
+  );
+
+  // タブコンテンツを描画する関数
+  function renderTabContent(tab: TabType) {
+    switch (tab) {
+      case 'sales':
+        return detail ? <SalesTab detail={detail} /> : null;
+      case 'sku':
+        return detail ? <SkuTab skuList={detail.skuList} /> : null;
+      case 'seo':
+        return seoData ? <SeoTab data={seoData} /> : null;
+      case 'ads':
+        return (
           <AdsTab
             viewMode={adsViewMode}
             onViewModeChange={setAdsViewMode}
             keywords={keywords}
             keywordsDaily={keywordsDaily}
           />
-        )}
-            {activeTab === 'inventory' && (
-              <div className="bg-white rounded-lg shadow p-6">
-                <h3 className="text-lg font-semibold mb-4">📦 在庫</h3>
-                <p className="text-gray-500">この商品の在庫情報を表示</p>
-                <div className="text-center text-gray-400 py-8">🚧 準備中</div>
-              </div>
-            )}
-
-            {activeTab === 'tasks' && (
-              <div className="bg-white rounded-lg shadow p-6">
-                <h3 className="text-lg font-semibold mb-4">✅ タスク</h3>
-                <p className="text-gray-500">この商品のタスク管理</p>
-                <div className="text-center text-gray-400 py-8">🚧 準備中</div>
-              </div>
-            )}
-
-            {activeTab === 'memos' && (
-              <div className="bg-white rounded-lg shadow p-6">
-                <h3 className="text-lg font-semibold mb-4">📝 メモ</h3>
-                <p className="text-gray-500">この商品のメモ</p>
-                <div className="text-center text-gray-400 py-8">🚧 準備中</div>
-              </div>
-            )}
-
-            {activeTab === 'actions' && (
-              <div className="bg-white rounded-lg shadow p-6">
-                <h3 className="text-lg font-semibold mb-4">🎯 自社施策</h3>
-                <p className="text-gray-500">この商品の施策履歴</p>
-                <div className="text-center text-gray-400 py-8">🚧 準備中</div>
-              </div>
-            )}
-
-            {activeTab === 'competitors' && (
-              <div className="bg-white rounded-lg shadow p-6">
-                <h3 className="text-lg font-semibold mb-4">👀 競合</h3>
-                <p className="text-gray-500">この商品の競合情報</p>
-                <div className="text-center text-gray-400 py-8">🚧 準備中</div>
-              </div>
-            )}
+        );
+      case 'inventory':
+        return (
+          <div className="bg-white rounded-lg shadow p-6">
+            <h3 className="text-lg font-semibold mb-4">📦 在庫</h3>
+            <p className="text-gray-500">この商品の在庫情報を表示</p>
+            <div className="text-center text-gray-400 py-8">🚧 準備中</div>
+          </div>
+        );
+      case 'tasks':
+        return (
+          <div className="bg-white rounded-lg shadow p-6">
+            <h3 className="text-lg font-semibold mb-4">✅ タスク</h3>
+            <p className="text-gray-500">この商品のタスク管理</p>
+            <div className="text-center text-gray-400 py-8">🚧 準備中</div>
+          </div>
+        );
+      case 'memos':
+        return (
+          <div className="bg-white rounded-lg shadow p-6">
+            <h3 className="text-lg font-semibold mb-4">📝 メモ</h3>
+            <p className="text-gray-500">この商品のメモ</p>
+            <div className="text-center text-gray-400 py-8">🚧 準備中</div>
+          </div>
+        );
+      case 'actions':
+        return (
+          <div className="bg-white rounded-lg shadow p-6">
+            <h3 className="text-lg font-semibold mb-4">🎯 自社施策</h3>
+            <p className="text-gray-500">この商品の施策履歴</p>
+            <div className="text-center text-gray-400 py-8">🚧 準備中</div>
+          </div>
+        );
+      case 'competitors':
+        return (
+          <div className="bg-white rounded-lg shadow p-6">
+            <h3 className="text-lg font-semibold mb-4">👀 競合</h3>
+            <p className="text-gray-500">この商品の競合情報</p>
+            <div className="text-center text-gray-400 py-8">🚧 準備中</div>
+          </div>
+        );
+      default:
+        return null;
+    }
+  }
       </main>
     </div>
   );
