@@ -19,7 +19,7 @@ import {
   formatNumber,
 } from '@/lib/api';
 
-type TabType = 'sales' | 'sku' | 'seo' | 'ads';
+type TabType = 'sales' | 'sku' | 'seo' | 'ads' | 'inventory' | 'tasks' | 'memos' | 'actions' | 'competitors';
 
 export default function ProductDetailPage() {
   const params = useParams();
@@ -42,7 +42,9 @@ export default function ProductDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [adsViewMode, setAdsViewMode] = useState<'daily' | 'average'>('daily');
-
+  const [splitMode, setSplitMode] = useState(false);
+  const [rightTab, setRightTab] = useState<TabType>('ads');
+  const [splitPosition, setSplitPosition] = useState(50);
   const fetchData = useCallback(async () => {
     setLoading(true);
     setError(null);
