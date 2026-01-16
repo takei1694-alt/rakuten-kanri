@@ -4,7 +4,7 @@ import Header from '@/components/Header';
 import PeriodSelector from '@/components/PeriodSelector';
 import SummaryCards from '@/components/SummaryCards';
 import ProductTable from '@/components/ProductTable';
-import { Period, SummaryData, ProductData, getSummary, getProducts } from '@/lib/api';
+import { Period, SummaryData, ProductData, RecentOrderData, getSummary, getProducts, getRecentOrders, formatCurrency, formatPercent, formatNumber } from '@/lib/api';
 
 // タブの定義（7タブに変更）
 const TABS = [
@@ -26,7 +26,7 @@ export default function HomePage() {
   const [endDate, setEndDate] = useState<string>('');
   const [searchQuery, setSearchQuery] = useState('');
   const [summary, setSummary] = useState<SummaryData | null>(null);
-  const [products, setProducts] = useState<ProductData[]>([]);
+  const [recentOrders, setRecentOrders] = useState<RecentOrderData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -34,12 +34,14 @@ export default function HomePage() {
     setLoading(true);
     setError(null);
     try {
-      const [summaryData, productsData] = await Promise.all([
-        getSummary(period, period === 'custom' ? startDate : undefined, period === 'custom' ? endDate : undefined),
-        getProducts(period, period === 'custom' ? startDate : undefined, period === 'custom' ? endDate : undefined),
-      ]);
-      setSummary(summaryData);
-      setProducts(productsData);
+      const [summaryData, productsData, recentOrdersData] = await Promise.all([
+  getSummary(period, period === 'custom' ? startDate : undefined, period === 'custom' ? endDate : undefined),
+  getProducts(period, period === 'custom' ? startDate : undefined, period === 'custom' ? endDate : undefined),
+  getRecentOrders(),
+]);
+setSummary(summaryData);
+setProducts(productsData);
+setRecentOrders(recentOrdersData);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'データの取得に失敗しました');
     } finally {
@@ -70,7 +72,7 @@ export default function HomePage() {
   const renderTabContent = () => {
     switch (activeTab) {
       case 'realtime':
-        return <RealtimeTab />;
+        return <RealtimeTab orders={recentOrders} />;
       case 'products':
         return <ProductTable products={filteredProducts} loading={loading} period={period} />;
       case 'sales':
@@ -168,63 +170,63 @@ export default function HomePage() {
 // ==========================================
 // リアルタイムタブ
 // ==========================================
-function RealtimeTab() {
-  return (
-    <div className="bg-white rounded-lg shadow p-6">
-      <h3 className="text-lg font-semibold mb-4">📡 リアルタイム</h3>
-      <p className="text-gray-500 mb-4">売上・メモ・施策・競合・タスクを時系列で表示</p>
-      
-      {/* サンプル表示 */}
-      <div className="space-y-4">
-        <div className="flex items-start space-x-3 p-3 bg-green-50 rounded-lg">
-          <span className="text-green-500">💰</span>
-          <div>
-            <p className="font-medium">新規注文</p>
-            <p className="text-sm text-gray-600">猫マット - ¥2,580</p>
-            <p className="text-xs text-gray-400">2分前</p>
-          </div>
-        </div>
-        
-        <div className="flex items-start space-x-3 p-3 bg-blue-50 rounded-lg">
-          <span className="text-blue-500">📝</span>
-          <div>
-            <p className="font-medium">メモ追加</p>
-            <p className="text-sm text-gray-600">ヘドロトルネード - 画像変更予定</p>
-            <p className="text-xs text-gray-400">15分前</p>
-          </div>
-        </div>
-        
-        <div className="flex items-start space-x-3 p-3 bg-yellow-50 rounded-lg">
-          <span className="text-yellow-500">⚠️</span>
-          <div>
-            <p className="font-medium">在庫アラート</p>
-            <p className="text-sm text-gray-600">タオルクリップ - 在庫残り5個</p>
-            <p className="text-xs text-gray-400">1時間前</p>
-          </div>
-        </div>
-        
-        <div className="flex items-start space-x-3 p-3 bg-purple-50 rounded-lg">
-          <span className="text-purple-500">👀</span>
-          <div>
-            <p className="font-medium">競合変化</p>
-            <p className="text-sm text-gray-600">A社 - 価格を¥200値下げ</p>
-            <p className="text-xs text-gray-400">3時間前</p>
-          </div>
-        </div>
-        
-        <div className="flex items-start space-x-3 p-3 bg-orange-50 rounded-lg">
-          <span className="text-orange-500">🎯</span>
-          <div>
-            <p className="font-medium">自社施策</p>
-            <p className="text-sm text-gray-600">猫マット - クーポン10%OFF開始</p>
-            <p className="text-xs text-gray-400">5時間前</p>
-          </div>
-        </div>
+function RealtimeTab({ orders }: { orders: RecentOrderData[] }) {
+  if (orders.length === 0) {
+    return (
+      <div className="bg-white rounded-lg shadow p-6">
+        <h3 className="text-lg font-semibold mb-4">📡 リアルタイム（直近1週間）</h3>
+        <p className="text-gray-500 text-center py-8">注文データがありません</p>
       </div>
-      
-      <p className="text-center text-gray-400 mt-6 text-sm">
-        ※ 実際のデータ連携は次のステップで実装します
-      </p>
+    );
+  }
+
+  return (
+    <div className="bg-white rounded-lg shadow overflow-hidden">
+      <div className="p-4 border-b border-gray-100">
+        <h3 className="font-semibold text-gray-900">📡 最新注文（直近1週間） - {orders.length}件</h3>
+      </div>
+      <div className="overflow-x-auto">
+        <table className="min-w-full divide-y divide-gray-200">
+          <thead className="bg-gray-50">
+            <tr>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">日付</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">商品名</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">SKU</th>
+              <th className="px-4 py-3 text-right text-xs font-medium text-gray-500">個数</th>
+              <th className="px-4 py-3 text-right text-xs font-medium text-gray-500">売上</th>
+              <th className="px-4 py-3 text-right text-xs font-medium text-gray-500">手数料</th>
+              <th className="px-4 py-3 text-right text-xs font-medium text-gray-500">クーポン</th>
+              <th className="px-4 py-3 text-right text-xs font-medium text-gray-500">ポイント</th>
+              <th className="px-4 py-3 text-right text-xs font-medium text-gray-500">原価</th>
+              <th className="px-4 py-3 text-right text-xs font-medium text-gray-500">送料</th>
+              <th className="px-4 py-3 text-right text-xs font-medium text-gray-500">利益</th>
+              <th className="px-4 py-3 text-right text-xs font-medium text-gray-500">利益率</th>
+            </tr>
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-200">
+            {orders.map((order, index) => (
+              <tr key={`${order.orderId}-${index}`} className="hover:bg-gray-50">
+                <td className="px-4 py-3 text-sm text-gray-600">{order.orderDate}</td>
+                <td className="px-4 py-3 text-sm font-medium text-gray-900">{order.productName}</td>
+                <td className="px-4 py-3 text-sm text-gray-600">{order.skuInfo || '-'}</td>
+                <td className="px-4 py-3 text-sm text-right">{formatNumber(order.quantity)}</td>
+                <td className="px-4 py-3 text-sm text-right font-medium">{formatCurrency(order.sales)}</td>
+                <td className="px-4 py-3 text-sm text-right text-gray-600">{formatCurrency(order.rakutenFee)}</td>
+                <td className="px-4 py-3 text-sm text-right text-gray-600">{formatCurrency(order.coupon)}</td>
+                <td className="px-4 py-3 text-sm text-right text-gray-600">{formatCurrency(order.points)}</td>
+                <td className="px-4 py-3 text-sm text-right text-gray-600">{formatCurrency(order.cost)}</td>
+                <td className="px-4 py-3 text-sm text-right text-gray-600">{formatCurrency(order.shipping)}</td>
+                <td className={`px-4 py-3 text-sm text-right font-medium ${order.profit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  {formatCurrency(order.profit)}
+                </td>
+                <td className={`px-4 py-3 text-sm text-right ${order.profitRate >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  {formatPercent(order.profitRate)}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
