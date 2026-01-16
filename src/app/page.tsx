@@ -26,6 +26,7 @@ export default function HomePage() {
   const [endDate, setEndDate] = useState<string>('');
   const [searchQuery, setSearchQuery] = useState('');
   const [summary, setSummary] = useState<SummaryData | null>(null);
+  const [products, setProducts] = useState<ProductData[]>([]);
   const [recentOrders, setRecentOrders] = useState<RecentOrderData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -35,13 +36,13 @@ export default function HomePage() {
     setError(null);
     try {
       const [summaryData, productsData, recentOrdersData] = await Promise.all([
-  getSummary(period, period === 'custom' ? startDate : undefined, period === 'custom' ? endDate : undefined),
-  getProducts(period, period === 'custom' ? startDate : undefined, period === 'custom' ? endDate : undefined),
-  getRecentOrders(),
-]);
-setSummary(summaryData);
-setProducts(productsData);
-setRecentOrders(recentOrdersData);
+        getSummary(period, period === 'custom' ? startDate : undefined, period === 'custom' ? endDate : undefined),
+        getProducts(period, period === 'custom' ? startDate : undefined, period === 'custom' ? endDate : undefined),
+        getRecentOrders(),
+      ]);
+      setSummary(summaryData);
+      setProducts(productsData);
+      setRecentOrders(recentOrdersData);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'データの取得に失敗しました');
     } finally {
