@@ -438,3 +438,72 @@ export async function getRecentOrders(): Promise<RecentOrderData[]> {
     profitRate: row.sales > 0 ? (row.profit / row.sales) * 100 : 0
   }));
 }
+// 在庫予測データの型定義
+export interface InventoryForecastData {
+  id: number;
+  skuId: string;
+  productId: string;
+  productName: string;
+  skuInfo: string;
+  totalStock: number;
+  warehouseStock: number;
+  shippingStock: number;
+  orderedStock: number;
+  weeklySales: number;
+  monthlyForecast: number;
+  monthlySales1m: number;
+  monthlySales3m: number;
+  monthlyAvg3m: number;
+  stockMonthsTotalWeekly: number | null;
+  stockMonthsWarehouseWeekly: number | null;
+  stockMonthsTotal1m: number | null;
+  stockMonthsWarehouse1m: number | null;
+  stockMonthsTotal3m: number | null;
+  stockMonthsWarehouse3m: number | null;
+  checkFlag: boolean;
+  isHidden: boolean;
+}
+
+// 在庫予測データを取得
+export async function getInventoryForecast(): Promise<InventoryForecastData[]> {
+  try {
+    const { data, error } = await supabase
+      .from('inventory_forecast')
+      .select('*')
+      .eq('is_hidden', false)
+      .order('sku_id', { ascending: true });
+
+    if (error) {
+      console.error('Error fetching inventory forecast:', error);
+      return [];
+    }
+
+    return (data || []).map(item => ({
+      id: item.id,
+      skuId: item.sku_id || '',
+      productId: item.product_id || '',
+      productName: item.product_name || '',
+      skuInfo: item.sku_info || '',
+      totalStock: item.total_stock || 0,
+      warehouseStock: item.warehouse_stock || 0,
+      shippingStock: item.shipping_stock || 0,
+      orderedStock: item.ordered_stock || 0,
+      weeklySales: item.weekly_sales || 0,
+      monthlyForecast: item.monthly_forecast || 0,
+      monthlySales1m: item.monthly_sales_1m || 0,
+      monthlySales3m: item.monthly_sales_3m || 0,
+      monthlyAvg3m: item.monthly_avg_3m || 0,
+      stockMonthsTotalWeekly: item.stock_months_total_weekly,
+      stockMonthsWarehouseWeekly: item.stock_months_warehouse_weekly,
+      stockMonthsTotal1m: item.stock_months_total_1m,
+      stockMonthsWarehouse1m: item.stock_months_warehouse_1m,
+      stockMonthsTotal3m: item.stock_months_total_3m,
+      stockMonthsWarehouse3m: item.stock_months_warehouse_3m,
+      checkFlag: item.check_flag || false,
+      isHidden: item.is_hidden || false,
+    }));
+  } catch (error) {
+    console.error('Error in getInventoryForecast:', error);
+    return [];
+  }
+}
