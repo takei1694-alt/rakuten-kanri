@@ -36,7 +36,7 @@ export default function Home() {
   const [showCheckOnly, setShowCheckOnly] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [period, setPeriod] = useState<'today' | 'yesterday' | 'thisWeek' | 'lastWeek' | 'thisMonth' | 'lastMonth' | 'custom'>('thisMonth');
+  const [period, setPeriod] = useState('thisMonth');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [activeTab, setActiveTab] = useState<'summary' | 'realtime' | 'inventory'>('summary');
