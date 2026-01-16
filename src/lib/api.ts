@@ -384,3 +384,55 @@ export async function getInventory(productId: string): Promise<InventoryData[]> 
     lastUpdated: row.last_updated || ''
   }));
 }
+// ==========================================
+// リアルタイム（最新注文）
+// ==========================================
+
+export interface RecentOrderData {
+  orderId: string;
+  orderDate: string;
+  productId: string;
+  productName: string;
+  skuInfo: string;
+  quantity: number;
+  sales: number;
+  rakutenFee: number;
+  coupon: number;
+  points: number;
+  cost: number;
+  shipping: number;
+  profit: number;
+  profitRate: number;
+}
+
+export async function getRecentOrders(): Promise<RecentOrderData[]> {
+  // 直近1週間の日付を計算
+  const oneWeekAgo = new Date();
+  oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+  const startDate = oneWeekAgo.toISOString().split('T')[0];
+
+  const { data, error } = await supabase
+    .from('orders')
+    .select('order_id, order_date, product_id, product_name, sku_info, quantity, sales, rakuten_fee, coupon, points, cost, shipping, profit')
+    .gte('order_date', startDate)
+    .order('order_date', { ascending: false });
+
+  if (error) throw error;
+
+  return (data || []).map(row => ({
+    orderId: row.order_id || '',
+    orderDate: row.order_date || '',
+    productId: row.product_id || '',
+    productName: row.product_name || '',
+    skuInfo: row.sku_info || '',
+    quantity: row.quantity || 1,
+    sales: row.sales || 0,
+    rakutenFee: row.rakuten_fee || 0,
+    coupon: row.coupon || 0,
+    points: row.points || 0,
+    cost: row.cost || 0,
+    shipping: row.shipping || 0,
+    profit: row.profit || 0,
+    profitRate: row.sales > 0 ? (row.profit / row.sales) * 100 : 0
+  }));
+}
