@@ -404,7 +404,6 @@ export interface RecentOrderData {
   profit: number;
   profitRate: number;
 }
-
 export async function getRecentOrders(): Promise<RecentOrderData[]> {
   // 直近1週間の日付を計算
   const oneWeekAgo = new Date();
@@ -413,14 +412,17 @@ export async function getRecentOrders(): Promise<RecentOrderData[]> {
 
   const { data, error } = await supabase
     .from('orders')
-    .select('order_id, order_date, product_id, product_name, sku_info, quantity, sales, rakuten_fee, coupon, points, cost, shipping, profit')
+    .select('*')
     .gte('order_date', startDate)
     .order('order_date', { ascending: false });
 
-  if (error) throw error;
+  if (error) {
+    console.error('getRecentOrders error:', error);
+    return [];
+  }
 
   return (data || []).map(row => ({
-    orderId: row.order_id || '',
+    orderId: row.order_id || row.id || '',
     orderDate: row.order_date || '',
     productId: row.product_id || '',
     productName: row.product_name || '',
