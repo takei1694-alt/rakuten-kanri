@@ -266,7 +266,7 @@ function ProductsTable({ products }: { products: ProductData[] }) {
                   </Link>
                 </td>
                 <td className="px-4 py-3 text-sm text-right">{formatCurrency(product.sales)}</td>
-                <td className="px-4 py-3 text-sm text-right">{formatNumber(product.quantity)}</td>
+                <td className="px-4 py-3 text-sm text-right">{formatNumber(product.orders)}</td>
                 <td className={`px-4 py-3 text-sm text-right ${product.profit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                   {formatCurrency(product.profit)}
                 </td>
