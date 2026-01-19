@@ -9,12 +9,10 @@ import {
   getInventoryForecast,
   SummaryData, 
   ProductData, 
+  Period,
   RecentOrderData,
   InventoryForecastData
 } from '@/lib/api';
-
-// Period型を定義
-type Period = 'today' | 'yesterday' | 'thisWeek' | 'lastWeek' | 'thisMonth' | 'lastMonth' | 'custom';
 
 // フォーマット関数
 const formatCurrency = (value: number): string => {
@@ -38,7 +36,7 @@ export default function Home() {
   const [showCheckOnly, setShowCheckOnly] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [period, setPeriod] = useState<Period>('thisMonth');
+  const [period, setPeriod] = useState('thisMonth');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [activeTab, setActiveTab] = useState<'summary' | 'realtime' | 'inventory'>('summary');
@@ -48,8 +46,8 @@ export default function Home() {
       setLoading(true);
       setError(null);
       const [summaryData, productsData, recentOrdersData, forecastData] = await Promise.all([
-        getSummary(period as any, period === 'custom' ? startDate : undefined, period === 'custom' ? endDate : undefined),
-        getProducts(period as any, period === 'custom' ? startDate : undefined, period === 'custom' ? endDate : undefined),
+        getSummary(period, period === 'custom' ? startDate : undefined, period === 'custom' ? endDate : undefined),
+        getProducts(period, period === 'custom' ? startDate : undefined, period === 'custom' ? endDate : undefined),
         getRecentOrders(),
         getInventoryForecast(),
       ]);
@@ -220,12 +218,12 @@ export default function Home() {
 function SummaryCards({ summary }: { summary: SummaryData | null }) {
   if (!summary) return null;
 
- const cards = [
-  { label: '売上', value: formatCurrency(summary.sales), color: 'blue' },
-  { label: '注文数', value: formatNumber(summary.orders), color: 'green' },
-  { label: '利益', value: formatCurrency(summary.profit), color: summary.profit >= 0 ? 'green' : 'red' },
-  { label: '利益率', value: formatPercent(summary.profitRate), color: summary.profitRate >= 0 ? 'green' : 'red' },
-];
+  const cards = [
+    { label: '売上', value: formatCurrency(summary.totalSales), color: 'blue' },
+    { label: '注文数', value: formatNumber(summary.orderCount), color: 'green' },
+    { label: '利益', value: formatCurrency(summary.profit), color: summary.profit >= 0 ? 'green' : 'red' },
+    { label: '利益率', value: formatPercent(summary.profitRate), color: summary.profitRate >= 0 ? 'green' : 'red' },
+  ];
 
   return (
     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
@@ -266,7 +264,7 @@ function ProductsTable({ products }: { products: ProductData[] }) {
                   </Link>
                 </td>
                 <td className="px-4 py-3 text-sm text-right">{formatCurrency(product.sales)}</td>
-                <td className="px-4 py-3 text-sm text-right">{formatNumber(product.orders)}</td>
+                <td className="px-4 py-3 text-sm text-right">{formatNumber(product.quantity)}</td>
                 <td className={`px-4 py-3 text-sm text-right ${product.profit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                   {formatCurrency(product.profit)}
                 </td>
