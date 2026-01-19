@@ -9,10 +9,12 @@ import {
   getInventoryForecast,
   SummaryData, 
   ProductData, 
-  Period,
   RecentOrderData,
   InventoryForecastData
 } from '@/lib/api';
+
+// Period型を定義
+type Period = 'today' | 'yesterday' | 'thisWeek' | 'lastWeek' | 'thisMonth' | 'lastMonth' | 'custom';
 
 // フォーマット関数
 const formatCurrency = (value: number): string => {
@@ -36,7 +38,7 @@ export default function Home() {
   const [showCheckOnly, setShowCheckOnly] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [period, setPeriod] = useState('thisMonth');
+  const [period, setPeriod] = useState<Period>('thisMonth');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [activeTab, setActiveTab] = useState<'summary' | 'realtime' | 'inventory'>('summary');
@@ -46,8 +48,8 @@ export default function Home() {
       setLoading(true);
       setError(null);
       const [summaryData, productsData, recentOrdersData, forecastData] = await Promise.all([
-        getSummary(period, period === 'custom' ? startDate : undefined, period === 'custom' ? endDate : undefined),
-        getProducts(period, period === 'custom' ? startDate : undefined, period === 'custom' ? endDate : undefined),
+        getSummary(period as any, period === 'custom' ? startDate : undefined, period === 'custom' ? endDate : undefined),
+        getProducts(period as any, period === 'custom' ? startDate : undefined, period === 'custom' ? endDate : undefined),
         getRecentOrders(),
         getInventoryForecast(),
       ]);
