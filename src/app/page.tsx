@@ -221,11 +221,11 @@ function SummaryCards({ summary }: { summary: SummaryData | null }) {
   if (!summary) return null;
 
   const cards = [
-    { label: '売上', value: formatCurrency(summary.totalSales), color: 'blue' },
-    { label: '注文数', value: formatNumber(summary.orderCount), color: 'green' },
-    { label: '利益', value: formatCurrency(summary.profit), color: summary.profit >= 0 ? 'green' : 'red' },
-    { label: '利益率', value: formatPercent(summary.profitRate), color: summary.profitRate >= 0 ? 'green' : 'red' },
-  ];
+  { label: '売上', value: formatCurrency(summary.sales), color: 'blue' },
+  { label: '注文数', value: formatNumber(summary.orders), color: 'green' },
+  { label: '利益', value: formatCurrency(summary.profit), color: summary.profit >= 0 ? 'green' : 'red' },
+  { label: '利益率', value: formatPercent(summary.profitRate), color: summary.profitRate >= 0 ? 'green' : 'red' },
+];
 
   return (
     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
