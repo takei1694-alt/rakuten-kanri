@@ -343,8 +343,7 @@ function RealtimeTab({ orders }: { orders: RecentOrderData[] }) {
     </div>
   );
 }
-
-// 在庫予測タブ
+// 在庫予測タブ（修正版：商品名と1ヶ月販売を追加）
 function InventoryTab({ 
   data, 
   search, 
@@ -386,7 +385,7 @@ function InventoryTab({
   if (data.length === 0) {
     return (
       <div className="bg-white rounded-lg shadow p-6">
-        <h3 className="text-lg font-semibold mb-4">📦 在庫予測</h3>
+        <h3 className="text-lg font-semibold mb-4">📦 在庫</h3>
         <p className="text-gray-500 text-center py-8">在庫データがありません</p>
       </div>
     );
@@ -396,7 +395,7 @@ function InventoryTab({
     <div className="bg-white rounded-lg shadow overflow-hidden">
       <div className="p-4 border-b border-gray-100">
         <div className="flex flex-wrap items-center justify-between gap-4">
-          <h3 className="font-semibold text-gray-900">📦 在庫予測 - {filteredData.length}件</h3>
+          <h3 className="font-semibold text-gray-900">📦 在庫 - {filteredData.length}件</h3>
           <div className="flex items-center gap-4">
             <input
               type="text"
@@ -421,10 +420,12 @@ function InventoryTab({
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
+              <th className="px-3 py-3 text-left text-xs font-medium text-gray-500">商品名</th>
               <th className="px-3 py-3 text-left text-xs font-medium text-gray-500">SKU</th>
               <th className="px-3 py-3 text-left text-xs font-medium text-gray-500">SKU情報</th>
               <th className="px-3 py-3 text-right text-xs font-medium text-gray-500 bg-blue-50">総在庫</th>
               <th className="px-3 py-3 text-right text-xs font-medium text-gray-500 bg-green-50">倉庫</th>
+              <th className="px-3 py-3 text-right text-xs font-medium text-gray-500 bg-purple-50">1ヶ月販売</th>
               <th className="px-3 py-3 text-right text-xs font-medium text-gray-500 bg-blue-50">総/週</th>
               <th className="px-3 py-3 text-right text-xs font-medium text-gray-500 bg-green-50">倉/週</th>
               <th className="px-3 py-3 text-right text-xs font-medium text-gray-500 bg-blue-50">総/1M</th>
@@ -437,10 +438,14 @@ function InventoryTab({
           <tbody className="bg-white divide-y divide-gray-200">
             {filteredData.map((item) => (
               <tr key={item.id} className="hover:bg-gray-50">
+                <td className="px-3 py-3 text-sm text-gray-900 max-w-[200px] truncate" title={item.productName}>
+                  {item.productName || '-'}
+                </td>
                 <td className="px-3 py-3 text-sm font-medium text-gray-900">{item.skuId}</td>
                 <td className="px-3 py-3 text-sm text-gray-600">{item.skuInfo || '-'}</td>
-                <td className="px-3 py-3 text-sm text-right bg-blue-50">{formatNumber(item.totalStock)}</td>
+                <td className="px-3 py-3 text-sm text-right bg-blue-50 font-medium">{formatNumber(item.totalStock)}</td>
                 <td className="px-3 py-3 text-sm text-right bg-green-50">{formatNumber(item.warehouseStock)}</td>
+                <td className="px-3 py-3 text-sm text-right bg-purple-50 font-medium">{formatNumber(item.monthlySales1m)}</td>
                 <td className={`px-3 py-3 text-sm text-right bg-blue-50 ${getStockMonthColor(item.stockMonthsTotalWeekly, false)}`}>
                   {formatStockMonths(item.stockMonthsTotalWeekly)}
                 </td>
